@@ -71,13 +71,8 @@ MONGO_INITDB_DATABASE=ns
 ### Deploy
 
 Easily done in a Docker container.
-
-#### Services
-
-[![N|Solid](SERVICES.png)](SERVICES.png)
-
 Make required changes within Dockerfile + compose files if necessary. When ready, simply use docker-compose to build your environment.
-This will create the ns-express, ns-mongo services with necessary dependencies.
+This will create the *ns-express, ns-mongo* services with necessary dependencies.
 Once done, simply import postman.json into Postman:
 
 For dev, docker compose:
