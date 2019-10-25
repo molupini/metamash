@@ -1,0 +1,17 @@
+npm-debug.log*
+node_modules/
+.terraform/
+.sandbox/
+.env/
+.vscode/
+**/*.tfstate
+**/*.tfstate.backup
+**/*.tfplan
+**/*.pem
+**/*-key
+**/*-key.pub
+**/*.output.json
+**/*\-output.json
+**/crash.log
+package-lock.json*
+TODO.txt

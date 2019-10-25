@@ -1,0 +1,11 @@
+node_modules/
+.terraform/
+# *.tfstate
+# *.tfplan
+.git/
+.vscode/
+postman/
+sandbox/
+.env/
+*.env
+TODO

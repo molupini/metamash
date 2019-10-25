@@ -1,0 +1,27 @@
+{
+  "name": "iac",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "aws-sdk": "^2.493.0",
+    "bcryptjs": "^2.4.3",
+    "express": "^4.17.1",
+    "got": "^9.6.0",
+    "moment": "^2.24.0",
+    "mongoose": "^5.6.4",
+    "node-rsa": "^1.0.5",
+    "underscore": "^1.9.1",
+    "uuid": "^3.3.2",
+    "validator": "^11.0.0",
+    "winston": "^3.2.1"
+  },
+  "devDependencies": {
+    "nodemon": "^1.19.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "maurizio.lupini@bcx.co.za",
+  "license": "ISC"
+}
