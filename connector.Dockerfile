@@ -1,5 +1,5 @@
 # base
-FROM node:10-alpine as base
+FROM node:13-alpine as base
 
 ENV NODE_ENV=development
 

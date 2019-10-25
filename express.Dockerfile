@@ -16,7 +16,7 @@ RUN apk add --no-cache tini
 
 WORKDIR /node
 
-COPY ./iac/package.json ./iac/package*.json ./
+COPY ./ns/package.json ./ns/package*.json ./
 
 # need to verify the .then() warning 
 RUN npm config list && npm ci && npm cache clean --force
@@ -51,7 +51,7 @@ FROM base as source
 
 WORKDIR /node/app
 
-COPY ./iac/. . 
+COPY ./ns/. . 
 
 
 # prod
