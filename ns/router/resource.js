@@ -340,11 +340,15 @@ router.patch('/resources/update/:id', auth, async (req, res) => {
 
 router.post('/resources/add/rule/:id', auth, async (req, res) => {
     try {
+        // TODO NEED TO PROVIDE A ENDPOINT TO DELETE RULES 
         // await SecurityRules.deleteMany({
         // })
-        const group = await Resources.findOne({
+        var group = await Resources.find({
             author: req.params.id,
             resourceType: 'SGRP'
+        })
+        group = group.filter((x) => {
+            return x.misc.forResource === req.body.forResource
         })
         // debugging
         // console.log('group =')
@@ -356,6 +360,8 @@ router.post('/resources/add/rule/:id', auth, async (req, res) => {
             author: req.params.id,
             resourceType: req.body.forResource
         })
+        // console.log('resource =')
+        // console.log(resource)
         if(!resource){
             return res.status(404).send({message:'Resource not Found'})
         }
@@ -364,12 +370,14 @@ router.post('/resources/add/rule/:id', auth, async (req, res) => {
             owner: req.params.id,
             ...req.body
         })
-
         // debugging
         // console.log('securityRule =')
         // console.log(securityRule)
         if(securityRule.length !== 0){
             return res.status(404).send({message:'Rule Found'})
+        }
+        if(group.length >= 1){
+            group = group[0]
         }
         const rule = new SecurityRules({
             author: group._id,
@@ -399,7 +407,7 @@ router.get('/resources/query/:id', auth, async (req, res) => {
         const tagging = await Tagging.findOne({
             author: deployment._id
         })
-        const resources = await Resources.find({
+        var resources = await Resources.find({
             author: deployment._id
         })
         const connector = await MainConnector.findOne({
@@ -466,15 +474,60 @@ router.get('/resources/query/:id', auth, async (req, res) => {
             }
             return res.status(200).send({resources: object})
         }
+        if(req.query.document === 'resourceArray'){
+            // console.log(resources)
+            if (resources.length > 0){
+                for (let i = 0; i < resources.length; i++){
+                    if (resources[i]['resourceType'] !== 'SGRP'){
+                        // console.log(resources[i])
+                        var inner = {}
+                        const key = resources[i]['resourceType']
+                        inner['logicalName'] = resources[i]['logicalName']
+                        inner['resourceId'] = resources[i]['id']
+                        if (resources[i]['logicalId'] !== 'NULL'){
+                            inner['logicalId'] = resources[i]['logicalId']
+                        }
+                        inner['resourceType'] = resources[i]['resourceType']
+                        if (resources[i]['misc'] !== undefined){
+                            Object.keys(resources[i]['misc']).forEach((x) => {
+                                const val = resources[i]['misc'][x]
+                                inner[x] =  val !== typeof String ? val.toString() : val
+                            })
+                        }
+                        if(object[key] !== undefined){
+                            object[key].push(inner)
+                        } 
+                        else {
+                            object[key] = [inner]
+                        }
+                        // console.log(object.keys(key))
+                    }
+                }
+            }
+            return res.status(200).send({resources: object})
+        }
         if(req.query.document === 'security'){
             var ruleObject = {}
             var resourceObject = {}
             if (resources.length > 0){
-
+                resources = resources.filter((x) => {
+                    // console.log(x.resourceType === 'SGRP')
+                    return x.resourceType === 'SGRP'
+                })
+                // debugging
+                // console.log('resources =')
+                // console.log(resources)
+                // console.log('count =', resources.length)
+                // console.log()
                 for (let i = 0; i < resources.length; i++){
                     const rule = await SecurityRules.find({
                         author: resources[i].id
                     })
+                    // debugging
+                    // console.log(`rule for, ${resources[i].id} = `)
+                    // console.log(rule)
+                    // console.log('count =', rule.length)
+                    // console.log()
                     if (rule.length > 0){
                         for (let x = 0; x < rule.length; x++){
                             // SECURITY GROUP RESOURCE
@@ -505,6 +558,11 @@ router.get('/resources/query/:id', auth, async (req, res) => {
                             else {
                                 ruleObject[skey].push(secure)
                             }
+                            // debugging
+                            // console.log('resource =')
+                            // console.log(resource)
+                            // console.log('secure =')
+                            // console.log(secure)
                         }
                     }
                 }

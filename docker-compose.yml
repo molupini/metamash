@@ -14,7 +14,7 @@ services:
         - ./ns/.:/node/app
         - /node/app/node_modules
       env_file:
-        - ./.env/app.development.env
+        - ./.env/app.env
 
   ns-mongo:
     build:
@@ -24,4 +24,4 @@ services:
     ports: 
       - 27018:27018
     env_file:
-      - ./.env/app.development.env
+      - ./.env/app.env

@@ -118,8 +118,8 @@ labelsSchema.pre('save', async function(next) {
             label.mandatoryTagsKeys = ['locations']
         }
         if(label.resourceType === 'EC2'){
-            label.mandatoryConfigKeys = ['count', 'template', 'compuTier']
-            label.mandatoryTagsKeys = ['perimeters']
+            label.mandatoryConfigKeys = ['count', 'template', 'compuTier', 'perimeters']
+            // label.mandatoryTagsKeys = ['perimeters']
             const tier = await new Tiers({
                 author: label._id,
                 category: "COMPU",
