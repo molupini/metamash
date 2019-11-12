@@ -171,6 +171,10 @@ resourcesSchema.pre('save', async function(next) {
                 console.log('resources =')
                 console.log(resources.misc)
                 break
+            case 'EBS':
+                // IF NOT PERSISTENT EQUAL TO FALSE OTHERWISE DEFAULT TO ALWAYS PERSISTENT
+                resources.misc.isPersistent = resources.misc.isPersistent === false ? false : true
+                break
             case 'SGRP':
                 // TODO IF UNABLE TO THROW ERROR RATHER APPLY DEFAULTS 
                 // VALID PORT NUMBER
