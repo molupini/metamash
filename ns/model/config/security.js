@@ -60,7 +60,7 @@ const securityRuleSchema = new mongoose.Schema({
         trim: true,
         required: true,
         validate(value){
-            const re = new RegExp('(SELF|ESX|VM|DC|TMP|HPV|CLS|NETW|PHY|NOSQL|SQL|CON|FUNC|BLOB|VPC|API|SMS|MAIL|GRP|USR|NLB|DNS|APP|WEB|WEBVM|DBVM|EC2|DYN|S3|ECS|BEAN|STATE|EBS|RDS)')
+            const re = new RegExp('(SELF|ESX|VM|DC|TMP|HPV|CLS|NETW|PHY|NOSQL|SQL|CON|FUNC|BLOB|VPC|API|SMS|MAIL|GRP|USR|NLB|DNS|APP|WEB|WEBVM|DBVM|EC2|DYN|S3|ECS|BEAN|STATE|EBS|RDS|ALB)')
             if(!value.match(re)){
                 throw new Error('Please provide Resource')
             }
@@ -71,7 +71,7 @@ const securityRuleSchema = new mongoose.Schema({
         trim: true,
         required: true,
         validate(value){
-            const re = new RegExp('(SELF|ESX|VM|DC|TMP|HPV|CLS|NETW|PHY|NOSQL|SQL|CON|FUNC|BLOB|VPC|API|SMS|MAIL|GRP|USR|NLB|DNS|APP|WEB|WEBVM|DBVM|EC2|DYN|S3|ECS|BEAN|STATE|EBS|RDS)')
+            const re = new RegExp('(SELF|ESX|VM|DC|TMP|HPV|CLS|NETW|PHY|NOSQL|SQL|CON|FUNC|BLOB|VPC|API|SMS|MAIL|GRP|USR|NLB|DNS|APP|WEB|WEBVM|DBVM|EC2|DYN|S3|ECS|BEAN|STATE|EBS|RDS|ALB)')
             if(!value.match(re)){
                 throw new Error('Please provide Resource')
             }

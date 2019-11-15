@@ -22,7 +22,7 @@ const resourcesSchema = new mongoose.Schema({
         uppercase: true, 
         default: 'TMP',
         validate(value){
-            if (!value.match(/(ESX|VM|DC|TMP|HPV|CLS|NETW|PHY|NOSQL|SQL|CON|FUNC|BLOB|VPC|API|SMS|MAIL|GRP|USR|NLB|DNS|APP|WEB|WEBVM|DBVM|EC2|DYN|S3|ECS|BEAN|STATE|EBS|RDS|RULE)/)){
+            if (!value.match(/(ESX|VM|DC|TMP|HPV|CLS|NETW|PHY|NOSQL|SQL|CON|FUNC|BLOB|VPC|API|SMS|MAIL|GRP|USR|NLB|DNS|APP|WEB|WEBVM|DBVM|EC2|DYN|S3|ECS|BEAN|STATE|EBS|RDS|RULE|ALB)/)){
                 throw new Error('Please provide valid resourceType')
             }
         }
@@ -178,6 +178,7 @@ resourcesSchema.pre('save', async function(next) {
             case 'SGRP':
                 // TODO IF UNABLE TO THROW ERROR RATHER APPLY DEFAULTS 
                 // VALID PORT NUMBER
+                // TODO VERIFY IF NECESSARY AS ALREADY HAS A SCHEMA 
                 if(resources.misc.port){
                     // TODO ARRAY MULTI SEED INTO SECURITY RULES MODEL
                     if(resources.misc.port.match(/(\:)/)){
@@ -221,7 +222,7 @@ resourcesSchema.pre('save', async function(next) {
                     throw new Error('Please provide a valid direction')
                 }
                 // VALID FROM/TO RESOURCE
-                const re = new RegExp('(SELF|ESX|VM|DC|TMP|HPV|CLS|NETW|PHY|NOSQL|SQL|CON|FUNC|BLOB|VPC|API|SMS|MAIL|GRP|USR|NLB|DNS|APP|WEB|WEBVM|DBVM|EC2|DYN|S3|ECS|BEAN|STATE|EBS|RDS)')
+                const re = new RegExp('(SELF|ESX|VM|DC|TMP|HPV|CLS|NETW|PHY|NOSQL|SQL|CON|FUNC|BLOB|VPC|API|SMS|MAIL|GRP|USR|NLB|DNS|APP|WEB|WEBVM|DBVM|EC2|DYN|S3|ECS|BEAN|STATE|EBS|RDS|ALB)')
                 if(resources.misc.forResource.match(re) && resources.misc.toResource.match(re)){
                     // resources.misc.forResource = resources.misc.forResource
                     // resources.misc.toResource = resources.misc.toResource

@@ -79,11 +79,38 @@ router.post('/resources/create', auth, async (req, res) => {
         }
 
 
+        // TODO DEPRECATE COUNT AS WILL NOT BE NECESSARY WITH ASG
+        // IF CALLER/USER WANTS MORE ITEMS WILL NEED TO ITERATE
+        // COMMENT BLOCK BELOW IS IN REVIEW, SEE # FOR CURRENT SOLUTION
+
+        // #
+        // // SEED RESOURCE
+        resource = await new Resources({
+            author: object.deploymentId,
+            owner: object.accountId,
+            resourceType: builder.tag.resourceType,
+            logicalName: logicalName,
+            userDefined: true,
+            misc: builder.configuration
+        })
+        await resource.save()
+
+        // // SEED NAME
+        const name = await new Names({
+            author: resource._id, 
+            fullName: logicalName
+        })
+        await name.save()
+        // #
+
+        /*
         // COUNT PARAMETER GREATER THEN 1
         const numerator = builder.configuration.count
         var resource = null
         var ln = []
+
         if(numerator > 1){
+            
             var num = 0
             var iteration = 0
             var re = null
@@ -119,7 +146,7 @@ router.post('/resources/create', auth, async (req, res) => {
                 ln.push(name.fullName)
                 num++
             }
-
+            
         }else{
             // // SEED RESOURCE
             resource = await new Resources({
@@ -141,7 +168,8 @@ router.post('/resources/create', auth, async (req, res) => {
             ln.push(name.fullName)
         }
         // console.log(ln)
-
+        */
+        
         // // SEED TAGS 
         // // USING EXISTING DEPLOYMENT/CART FOR RESOURCE TO GROUP RESOURCES
         var tagging = null
