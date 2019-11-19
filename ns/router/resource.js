@@ -332,7 +332,6 @@ router.get('/resources/discovery/:id', async (req, res) => {
             return res.status(404).send({message:'Connector not found'})
         }
         if(connector.provider === 'AWS'){
-            // console.log(connector)
             await discover(process.env.AWS_ACCESS_KEY, process.env.AWS_SECRET_KEY, connector)
 
         }

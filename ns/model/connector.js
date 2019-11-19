@@ -200,127 +200,135 @@ mainConnectorSchema.methods.toJSON = function(){
     return connector
 }
 
-mainConnectorSchema.methods.seedVPC = async function (list){
+mainConnectorSchema.statics.seedVPC = async function (list = [], connect=null){
     try {
-        const connector = this
-        // console.log(connector)
-        await list.forEach(element => {
-            
-            var addVPC = async (element) => {
-                var vpc = null
-                const find = await Resources.findOne({
-                    logicalName: element.name
-                }, null)
-                // debugging
-                // console.log('element =')
-                // console.log(element)
-                // console.log('find =')
-                // console.log(find)
-                if(!find){
-                    vpc = await new Resources({
-                        author: connector._id, 
-                        owner: connector._id, 
-                        resourceType: 'VPC',
-                        logicalName: element.name, 
-                        logicalId: element.id,
-                        misc:
-                            {
-                                cidr: element.cidr
-                            }
-
-                    })
-                    await vpc.save()
-                }
-                return vpc
-            }
-            addVPC(element)
-            // debugging
-            // console.log(vpc)
-        })
+        // debugging
+        // console.log('list =')
         // console.log(list)
-    } catch (e) {
-        throw new Error(e)
-    }
-}
-
-mainConnectorSchema.methods.loadCred = async function(key, secret, session = null) {
-    try {
-        const options = {
-            accessKeyId: key,
-            secretAccessKey: secret,
-            sessionToken: session,
-            expired: true, 
-            expiryWindow: 15
-        }
-        const cred = await new AWS.Credentials(options)
-        logger.log('info', `aws loadCred, expired=${cred.expired}`)
-        if(!cred){
-            throw new Error('Please verify connector') 
-        }
-        return cred
-    } catch (e) {
-        console.Error(e)
-        throw new Error(e)
-    }
-}
-
-mainConnectorSchema.methods.filterVPC = async function (arr = [], regex) {
-    try {
-        var array = []
-        var name = null
-
-        for (x = 0; x < arr.length; x++){
-            const vpc = arr[x]
-            const id = vpc.VpcId
-            const cidr = vpc.CidrBlock
-            const owner = vpc.OwnerId
-            const state = vpc.State
-            const tags = vpc.Tags
-            var name = null
-            // console.log(vpc.Tags)
-            for (i = 0; i < tags.length; i++){
-                if(tags[i]['Key'] === 'Name'){
-                    name = tags[i].Value
+        
+        // console.log('connect =')
+        // console.log(connect)
+        
+        if (connect !== null && list.length > 0){
+            await list.forEach(element => {
+            
+                var addVPC = async (element) => {
+                    var vpc = null
+                    const find = await Resources.findOne({
+                        logicalName: element.name
+                    }, null)
+                    // debugging
+                    // console.log('element =')
+                    // console.log(element)
+                    // console.log('find =')
+                    // console.log(find)
+                    if(!find){
+                        vpc = await new Resources({
+                            author: connect._id, 
+                            owner: connect._id, 
+                            resourceType: 'VPC',
+                            logicalName: element.name, 
+                            logicalId: element.id,
+                            misc:
+                                {
+                                    cidr: element.cidr
+                                }
+    
+                        })
+                        await vpc.save()
+                    }
+                    // debugging
+                    // console.log('vpc =')
+                    // console.log(vpc)
+                    return vpc
                 }
-            }
-            if(state === 'available'){
-                // console.log(regex)
-                const trueName = await verifyPattern(name, regex)
-                if(trueName){
-                    array.push({id, cidr, owner, state, name})
-                }
-            }
+                addVPC(element)
+
+            })
         }
-        return array
     } catch (e) {
         throw new Error(e)
     }
 }
 
-// TODO, issue with return data unable to await for nested async function
-mainConnectorSchema.methods.getVPC = async function(cred, location, regex) {
-    try {
-        const connector = this
-        const ec2 = await new AWS.EC2({apiVersion: '2016-11-15', region: location, credentials: cred})
-        // console.log('getVPC ec2=')
-        // console.log(ec2)
-        if(!ec2){
-            throw new Error('Please verify connector') 
-        }
-        const vpc = await ec2.describeVpcs({}, async function (err, data) {
-            if(err){
-                throw new Error(err)
-            }
-            const list = await connector.filterVPC(data.Vpcs, regex)
-            await connector.seedVPC(list)
-            // return list
-        })
-        // return vpc
-    } catch (e) {
-        // console.Error(e)
-        throw new Error(e)
-    }
-}
+// mainConnectorSchema.methods.loadCred = async function(key, secret, session = null) {
+//     try {
+//         const options = {
+//             accessKeyId: key,
+//             secretAccessKey: secret,
+//             sessionToken: session,
+//             expired: true, 
+//             expiryWindow: 15
+//         }
+//         const cred = await new AWS.Credentials(options)
+//         logger.log('info', `aws loadCred, expired=${cred.expired}`)
+//         if(!cred){
+//             throw new Error('Please verify connector') 
+//         }
+//         return cred
+//     } catch (e) {
+//         console.Error(e)
+//         throw new Error(e)
+//     }
+// }
+
+// mainConnectorSchema.methods.filterVPC = async function (arr = [], regex) {
+//     try {
+//         var array = []
+//         var name = null
+
+//         for (x = 0; x < arr.length; x++){
+//             const vpc = arr[x]
+//             const id = vpc.VpcId
+//             const cidr = vpc.CidrBlock
+//             const owner = vpc.OwnerId
+//             const state = vpc.State
+//             const tags = vpc.Tags
+//             var name = null
+//             // console.log(vpc.Tags)
+//             for (i = 0; i < tags.length; i++){
+//                 if(tags[i]['Key'] === 'Name'){
+//                     name = tags[i].Value
+//                 }
+//             }
+//             if(state === 'available'){
+//                 // console.log(regex)
+//                 const trueName = await verifyPattern(name, regex)
+//                 if(trueName){
+//                     array.push({id, cidr, owner, state, name})
+//                 }
+//             }
+//         }
+//         return array
+//     } catch (e) {
+//         throw new Error(e)
+//     }
+// }
+
+// // TODO, issue with return data unable to await for nested async function
+// mainConnectorSchema.methods.getVPC = async function(cred, location, regex) {
+//     try {
+//         const connector = this
+//         const ec2 = await new AWS.EC2({apiVersion: '2016-11-15', region: location, credentials: cred})
+//         // console.log('getVPC ec2=')
+//         // console.log(ec2)
+//         if(!ec2){
+//             throw new Error('Please verify connector') 
+//         }
+//         const vpc = await ec2.describeVpcs({}, async function (err, data) {
+//             if(err){
+//                 throw new Error(err)
+//             }
+//             const list = await connector.filterVPC(data.Vpcs, regex)
+//             await connector.seedVPC(list)
+//             // return list
+//         })
+//         // return vpc
+//     } catch (e) {
+//         // console.Error(e)
+//         throw new Error(e)
+//     }
+// }
 
 mainConnectorSchema.pre('save', async function (next) {
     try {
@@ -437,14 +445,14 @@ mainConnectorSchema.pre('save', async function (next) {
             // label.tags.location[0].primary = connector.region
         }
         if(!connector.disableDiscovery && !connector.isNew && connector.provider === 'AWS') {
-            const cred = await connector.loadCred(process.env.AWS_ACCESS_KEY, process.env.AWS_SECRET_KEY)
-            if (!cred){
-                throw new Error('Please verify connector') 
-            }
-            const regex = await trueFalse(connector.VPCKeywordRegex)
-            logger.log('info', `connector trueFalse`)
-            console.log(regex)
-            const vpc = await connector.getVPC(cred, connector.location, regex)
+            // const cred = await connector.loadCred(process.env.AWS_ACCESS_KEY, process.env.AWS_SECRET_KEY)
+            // if (!cred){
+            //     throw new Error('Please verify connector') 
+            // }
+            // const regex = await trueFalse(connector.VPCKeywordRegex)
+            // // logger.log('info', `connector trueFalse`)
+            // // console.log(regex)
+            // const vpc = await connector.getVPC(cred, connector.location, regex)
         }
         next()
     } 

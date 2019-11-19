@@ -116,6 +116,7 @@ resourcesSchema.pre('save', async function(next) {
             case 'EC2':
                 // TODO VERIFY TMP, SET NULL IF NOT FOUND
                 tmp = resources.misc.template
+
                 if(tmp.match(/^(linux|windows)/)){
                     template = await Resources.findOne({
                         resourceType: 'TMP',
