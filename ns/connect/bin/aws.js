@@ -112,8 +112,8 @@ var listVPC = async function (arr = [], regex) {
         // debugging
         // console.log('listVPC result =')
         // console.log(result)
-        console.log('connect =')
-        console.log(connect)
+        // console.log('connect =')
+        // console.log(connect)
         await MainConnector.seedVPC(result, connect)
     } catch (e) {
         throw new Error(e)

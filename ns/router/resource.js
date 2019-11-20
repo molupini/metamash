@@ -333,7 +333,6 @@ router.get('/resources/discovery/:id', async (req, res) => {
         }
         if(connector.provider === 'AWS'){
             await discover(process.env.AWS_ACCESS_KEY, process.env.AWS_SECRET_KEY, connector)
-
         }
         res.status(200).send()
     } catch (e) {
