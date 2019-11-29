@@ -38,7 +38,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"provider\": \"aws\",\n\t\"groupOrganization\": \"MO\",\n\t\"location\": \"eu-west-1\",\n\t\"VPCKeywordRegex\": []\n}"
+							"raw": "{\n\t\"provider\": \"aws\",\n\t\"groupOrganization\": \"SG\",\n\t\"location\": \"eu-west-1\",\n\t\"VPCKeywordRegex\": []\n}"
 						},
 						"url": {
 							"raw": "{{url}}/connectors",
@@ -53,7 +53,7 @@
 					"response": []
 				},
 				{
-					"name": "*create connector vmw",
+					"name": "create connector vmw",
 					"event": [
 						{
 							"listen": "test",
@@ -132,35 +132,6 @@
 									"key": "populate",
 									"value": "true"
 								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "patch connector",
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "Content-Type",
-								"name": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\t\"disableDiscovery\": false,\n\t\"VPCKeywordRegex\": [\"\"]\n}"
-						},
-						"url": {
-							"raw": "{{url}}/connectors/{{connectId}}",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"connectors",
-								"{{connectId}}"
 							]
 						}
 					},
@@ -401,7 +372,7 @@
 					"name": "defaults",
 					"item": [
 						{
-							"name": "*post config",
+							"name": "* post config",
 							"event": [
 								{
 									"listen": "test",
@@ -445,7 +416,7 @@
 							"response": []
 						},
 						{
-							"name": "*patch config",
+							"name": "* patch config",
 							"request": {
 								"method": "PATCH",
 								"header": [
@@ -530,6 +501,49 @@
 				{
 					"name": "label",
 					"item": [
+						{
+							"name": "* post label ecr",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "263c5d77-a194-4c75-b0ee-7a4ea7d400f9",
+										"exec": [
+											"if (pm.response.code === 201){",
+											"    pm.environment.set(\"labelId\", pm.response.json()._id);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"resourceType\": \"ECR\",\n    \"keyMap\": [\n        \"resourceType\",\n        \"businessEntity\",\n        \"environments\",\n        \"application\"\n    ],\n    \"mandatoryConfigKeys\": [\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{url}}/config/label{{connectId}}",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"config",
+										"label{{connectId}}"
+									]
+								}
+							},
+							"response": []
+						},
 						{
 							"name": "* post label sgrp",
 							"event": [
@@ -828,7 +842,7 @@
 							"response": []
 						},
 						{
-							"name": "*patch label rds",
+							"name": "* patch label rds",
 							"event": [
 								{
 									"listen": "test",
@@ -915,7 +929,7 @@
 							"response": []
 						},
 						{
-							"name": "*patch label ebs",
+							"name": "* patch label ebs",
 							"event": [
 								{
 									"listen": "test",
@@ -959,7 +973,7 @@
 							"response": []
 						},
 						{
-							"name": "*patch label ec2",
+							"name": "* patch label ec2",
 							"event": [
 								{
 									"listen": "test",
@@ -1159,7 +1173,7 @@
 					"response": []
 				},
 				{
-					"name": "post tenants",
+					"name": "* post tenants",
 					"event": [
 						{
 							"listen": "test",
@@ -1208,7 +1222,7 @@
 					"response": []
 				},
 				{
-					"name": "*patch perimeters",
+					"name": "* patch perimeters",
 					"request": {
 						"method": "PATCH",
 						"header": [
@@ -1243,7 +1257,7 @@
 					"response": []
 				},
 				{
-					"name": "* post resources",
+					"name": "* post resources ubuntu18",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -1278,20 +1292,20 @@
 					"response": []
 				},
 				{
-					"name": "*patch templates",
+					"name": "* post resources ecs",
 					"request": {
-						"method": "PATCH",
+						"method": "POST",
 						"header": [
 							{
 								"key": "Content-Type",
 								"name": "Content-Type",
-								"value": "application/json",
-								"type": "text"
+								"type": "text",
+								"value": "application/json"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"logicalName\": \"linuxUbuntuBase18\",\n\t\"logicalId\": \"ami-08f053fa3d25478f4\"\n}"
+							"raw": "{\n\t\"resourceType\": \"TMP\",\n\t\"logicalName\": \"linuxEcsBase\"\n}"
 						},
 						"url": {
 							"raw": "{{url}}/context/{{connectId}}?config=resources",
@@ -1313,7 +1327,147 @@
 					"response": []
 				},
 				{
-					"name": "*patch tenants",
+					"name": "* post resources wordpress",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"resourceType\": \"TMP\",\n\t\"logicalName\": \"linuxUbuntuWordPress16\",\n\t\"logicalId\": \"ami-0da6fa539b124c0cb\"\n}"
+						},
+						"url": {
+							"raw": "{{url}}/context/{{connectId}}?config=resources",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"context",
+								"{{connectId}}"
+							],
+							"query": [
+								{
+									"key": "config",
+									"value": "resources"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "* patch templates ubuntu18",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"logicalName\": \"linuxUbuntuBase18\",\n\t\"logicalId\": \"ami-0bf45a5f4ab05b949\"\n}"
+						},
+						"url": {
+							"raw": "{{url}}/context/{{connectId}}?config=resources",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"context",
+								"{{connectId}}"
+							],
+							"query": [
+								{
+									"key": "config",
+									"value": "resources"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "* patch templates ecs",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"logicalName\": \"linuxEcsBase\",\n\t\"logicalId\": \"ami-08f053fa3d25478f4\"\n}"
+						},
+						"url": {
+							"raw": "{{url}}/context/{{connectId}}?config=resources",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"context",
+								"{{connectId}}"
+							],
+							"query": [
+								{
+									"key": "config",
+									"value": "resources"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "* patch templates workpress",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"logicalName\": \"linuxUbuntuWordPress16\",\n\t\"logicalId\": \"ami-0da6fa539b124c0cb\"\n}"
+						},
+						"url": {
+							"raw": "{{url}}/context/{{connectId}}?config=resources",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"context",
+								"{{connectId}}"
+							],
+							"query": [
+								{
+									"key": "config",
+									"value": "resources"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "patch tenants",
 					"event": [
 						{
 							"listen": "test",
@@ -1439,7 +1593,7 @@
 					"response": []
 				},
 				{
-					"name": "*generate project ou",
+					"name": "* generate project ou",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -1469,7 +1623,7 @@
 					"response": []
 				},
 				{
-					"name": "*generate group ou",
+					"name": "* generate group ou",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -1548,7 +1702,7 @@
 					"response": []
 				},
 				{
-					"name": "*generate tenant ou",
+					"name": "* generate tenant ou",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -1687,7 +1841,7 @@
 							"_postman_isSubFolder": true
 						},
 						{
-							"name": "ec2-rds",
+							"name": "rds",
 							"item": [
 								{
 									"name": "post deployment create ec2",
@@ -1717,7 +1871,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n\t\"account\": \"MYLOFT-SBX\",\n\t\"resourceType\": \"EC2\",\n\t\"provider\": \"AWS\",\n\t\"count\": 1,\n\t\"template\": \"linuxUbuntuBase18\",\n\t\"compuTier\": \"bob\",\n\t\"application\": \"IPAM\",\n\t\"perimeters\": \"perimeter\"\n}"
+											"raw": "{\n\t\"account\": \"SGTI-ST-SB001\",\n\t\"resourceType\": \"EC2\",\n\t\"provider\": \"AWS\",\n\t\"count\": 1,\n\t\"template\": \"linuxUbuntuBase18\",\n\t\"compuTier\": \"bob\",\n\t\"application\": \"test\",\n\t\"perimeters\": \"perimeter\"\n}"
 										},
 										"url": {
 											"raw": "{{url}}/resources/create",
@@ -1760,7 +1914,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n\t\"account\": \"MYLOFT-SBX\",\n\t\"resourceType\": \"RDS\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"IPAM\",\n\t\"dbname\": \"default\",\n\t\"engine\": \"mariadb\",\n\t\"majorRelease\": \"5.7\",\n\t\"minorRelease\": \"19\",\n\t\"size\": 1,\n\t\"compuTier\": \"db.t2.small\"\n}"
+											"raw": "{\n\t\"account\": \"SGTI-ST-SB001\",\n\t\"resourceType\": \"RDS\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"test\",\n\t\"dbname\": \"default\",\n\t\"engine\": \"mariadb\",\n\t\"majorRelease\": \"5.7\",\n\t\"minorRelease\": \"19\",\n\t\"size\": 1,\n\t\"compuTier\": \"db.t2.small\"\n}"
 										},
 										"url": {
 											"raw": "{{url}}/resources/create?deploymentId={{deploymentId}}",
@@ -1809,7 +1963,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n\t\"account\": \"MYLOFT-SBX\",\n\t\"resourceType\": \"SGRP\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"TEST\",\n\t\"port\": \"22\",\n\t\"source\": \"0.0.0.0/0\",\n\t\"direction\": \"ingress\",\n\t\"forResource\": \"EC2\",\n\t\"toResource\": \"SELF\"\n}"
+											"raw": "{\n\t\"account\": \"SGTI-ST-SB001\",\n\t\"resourceType\": \"SGRP\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"TEST\",\n\t\"port\": \"22\",\n\t\"source\": \"0.0.0.0/0\",\n\t\"direction\": \"ingress\",\n\t\"forResource\": \"EC2\",\n\t\"toResource\": \"SELF\"\n}"
 										},
 										"url": {
 											"raw": "{{url}}/resources/create?deploymentId={{deploymentId}}",
@@ -1858,7 +2012,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n\t\"account\": \"MYLOFT-SBX\",\n\t\"resourceType\": \"SGRP\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"TEST\",\n\t\"port\": \"3306\",\n\t\"source\": \"sg-\",\n\t\"direction\": \"ingress\",\n\t\"forResource\": \"RDS\",\n\t\"toResource\": \"EC2\"\n}"
+											"raw": "{\n\t\"account\": \"SGTI-ST-SB001\",\n\t\"resourceType\": \"SGRP\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"TEST\",\n\t\"port\": \"3306\",\n\t\"source\": \"sg-\",\n\t\"direction\": \"ingress\",\n\t\"forResource\": \"RDS\",\n\t\"toResource\": \"EC2\"\n}"
 										},
 										"url": {
 											"raw": "{{url}}/resources/create?deploymentId={{deploymentId}}",
@@ -2008,7 +2162,7 @@
 							"_postman_isSubFolder": true
 						},
 						{
-							"name": "ec2-ebs",
+							"name": "ec2-basic",
 							"item": [
 								{
 									"name": "post deployment create ec2",
@@ -2038,7 +2192,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n\t\"account\": \"MYLOFT-SBX\",\n\t\"resourceType\": \"EC2\",\n\t\"provider\": \"AWS\",\n\t\"count\": 1,\n\t\"template\": \"linuxUbuntuBase18\",\n\t\"compuTier\": \"bob\",\n\t\"application\": \"IPAM\",\n\t\"perimeters\": \"perimeter\"\n}"
+											"raw": "{\n\t\"account\": \"SGTI-ST-SB001\",\n\t\"resourceType\": \"EC2\",\n\t\"provider\": \"AWS\",\n\t\"count\": 1,\n\t\"template\": \"linuxUbuntuBase18\",\n\t\"compuTier\": \"bob\",\n\t\"application\": \"TEST\",\n\t\"perimeters\": \"perimeter\"\n}"
 										},
 										"url": {
 											"raw": "{{url}}/resources/create",
@@ -2081,7 +2235,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n\t\"account\": \"MYLOFT-SBX\",\n\t\"resourceType\": \"EBS\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"IPAM\",\n\t\"path\": \"/dev/sdf\",\n\t\"isPersistent\": false, \n\t\"size\": 10,\n\t\"count\": 1\n}"
+											"raw": "{\n\t\"account\": \"SGTI-ST-SB001\",\n\t\"resourceType\": \"EBS\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"TEST\",\n\t\"path\": \"/dev/sdf\",\n\t\"isPersistent\": false, \n\t\"size\": 10,\n\t\"count\": 1\n}"
 										},
 										"url": {
 											"raw": "{{url}}/resources/create?deploymentId={{deploymentId}}",
@@ -2130,7 +2284,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n\t\"account\": \"MYLOFT-SBX\",\n\t\"resourceType\": \"SGRP\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"TEST\",\n\t\"port\": \"22\",\n\t\"source\": \"0.0.0.0/0\",\n\t\"direction\": \"ingress\",\n\t\"forResource\": \"EC2\",\n\t\"toResource\": \"SELF\"\n}"
+											"raw": "{\n\t\"account\": \"SGTI-ST-SB001\",\n\t\"resourceType\": \"SGRP\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"TEST\",\n\t\"port\": \"22\",\n\t\"source\": \"0.0.0.0/0\",\n\t\"direction\": \"ingress\",\n\t\"forResource\": \"EC2\",\n\t\"toResource\": \"SELF\"\n}"
 										},
 										"url": {
 											"raw": "{{url}}/resources/create?deploymentId={{deploymentId}}",
@@ -2181,13 +2335,44 @@
 										}
 									},
 									"response": []
+								},
+								{
+									"name": "* post security group rules ec2 80-in",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"port\": \"80\",\n\t\"source\": \"0.0.0.0/0\",\n\t\"direction\": \"ingress\",\n\t\"forResource\": \"EC2\",\n\t\"toResource\": \"SELF\"\n}"
+										},
+										"url": {
+											"raw": "{{url}}/resources/add/rule/{{deploymentId}}",
+											"host": [
+												"{{url}}"
+											],
+											"path": [
+												"resources",
+												"add",
+												"rule",
+												"{{deploymentId}}"
+											]
+										}
+									},
+									"response": []
 								}
 							],
 							"protocolProfileBehavior": {},
 							"_postman_isSubFolder": true
 						},
 						{
-							"name": "asg",
+							"name": "ec2-adv",
 							"item": [
 								{
 									"name": "post deployment create ec2",
@@ -2217,7 +2402,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n\t\"account\": \"MYLOFT-SBX\",\n\t\"resourceType\": \"EC2\",\n\t\"provider\": \"AWS\",\n\t\"count\": 3,\n\t\"template\": \"linuxUbuntuBase18\",\n\t\"compuTier\": \"bob\",\n\t\"application\": \"TEST\",\n\t\"perimeters\": \"backOffice\"\n}"
+											"raw": "{\n\t\"account\": \"SGTI-ST-SB001\",\n\t\"resourceType\": \"EC2\",\n\t\"provider\": \"AWS\",\n\t\"count\": 2,\n\t\"template\": \"linuxUbuntuWordPress16\",\n\t\"compuTier\": \"bob\",\n\t\"application\": \"TEST\",\n\t\"perimeters\": \"backOffice\"\n}"
 										},
 										"url": {
 											"raw": "{{url}}/resources/create",
@@ -2260,7 +2445,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n\t\"account\": \"MYLOFT-SBX\",\n\t\"resourceType\": \"S3\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"TEST\"\n}"
+											"raw": "{\n\t\"account\": \"SGTI-ST-SB001\",\n\t\"resourceType\": \"S3\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"TEST\"\n}"
 										},
 										"url": {
 											"raw": "{{url}}/resources/create?deploymentId={{deploymentId}}",
@@ -2309,7 +2494,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n\t\"account\": \"MYLOFT-SBX\",\n\t\"resourceType\": \"EBS\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"TEST\",\n\t\"path\": \"/dev/sdf\",\n\t\"isPersistent\": false, \n\t\"size\": 10,\n\t\"count\": 1\n}"
+											"raw": "{\n\t\"account\": \"SGTI-ST-SB001\",\n\t\"resourceType\": \"EBS\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"TEST\",\n\t\"path\": \"/dev/sdf\",\n\t\"isPersistent\": false, \n\t\"size\": 10,\n\t\"count\": 1\n}"
 										},
 										"url": {
 											"raw": "{{url}}/resources/create?deploymentId={{deploymentId}}",
@@ -2358,7 +2543,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n\t\"account\": \"MYLOFT-SBX\",\n\t\"resourceType\": \"ALB\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"TEST\",\n\t\"perimeters\": \"perimeter\"\n}"
+											"raw": "{\n\t\"account\": \"SGTI-ST-SB001\",\n\t\"resourceType\": \"ALB\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"TEST\",\n\t\"perimeters\": \"perimeter\"\n}"
 										},
 										"url": {
 											"raw": "{{url}}/resources/create?deploymentId={{deploymentId}}",
@@ -2407,7 +2592,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n\t\"account\": \"MYLOFT-SBX\",\n\t\"resourceType\": \"SGRP\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"TEST\",\n\t\"port\": \"80\",\n\t\"source\": \"0.0.0.0/0\",\n\t\"direction\": \"ingress\",\n\t\"forResource\": \"ALB\",\n\t\"toResource\": \"SELF\"\n}"
+											"raw": "{\n\t\"account\": \"SGTI-ST-SB001\",\n\t\"resourceType\": \"SGRP\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"TEST\",\n\t\"port\": \"80\",\n\t\"source\": \"0.0.0.0/0\",\n\t\"direction\": \"ingress\",\n\t\"forResource\": \"ALB\",\n\t\"toResource\": \"SELF\"\n}"
 										},
 										"url": {
 											"raw": "{{url}}/resources/create?deploymentId={{deploymentId}}",
@@ -2456,7 +2641,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n\t\"account\": \"MYLOFT-SBX\",\n\t\"resourceType\": \"SGRP\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"TEST\",\n\t\"port\": \"80\",\n\t\"source\": \"sg-\",\n\t\"direction\": \"ingress\",\n\t\"forResource\": \"EC2\",\n\t\"toResource\": \"ALB\"\n}"
+											"raw": "{\n\t\"account\": \"SGTI-ST-SB001\",\n\t\"resourceType\": \"SGRP\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"TEST\",\n\t\"port\": \"80\",\n\t\"source\": \"sg-\",\n\t\"direction\": \"ingress\",\n\t\"forResource\": \"EC2\",\n\t\"toResource\": \"ALB\"\n}"
 										},
 										"url": {
 											"raw": "{{url}}/resources/create?deploymentId={{deploymentId}}",
@@ -2509,7 +2694,7 @@
 									"response": []
 								},
 								{
-									"name": "* post security group rules ec2 80-out Copy",
+									"name": "* post security group rules ec2 80-out",
 									"request": {
 										"method": "POST",
 										"header": [
@@ -2534,6 +2719,493 @@
 												"add",
 												"rule",
 												"{{deploymentId}}"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"protocolProfileBehavior": {},
+							"_postman_isSubFolder": true
+						},
+						{
+							"name": "ecs",
+							"item": [
+								{
+									"name": "post deployment create ecr",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "db79db56-8a3a-4323-858d-0b12f9ea6a84",
+												"exec": [
+													"if (pm.response.code === 201){",
+													"    pm.environment.set(\"deploymentId\", pm.response.json()['deploymentId']);",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"account\": \"SGTI-ST-SB001\",\n\t\"resourceType\": \"ECR\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"TEST\"\n}"
+										},
+										"url": {
+											"raw": "{{url}}/resources/create",
+											"host": [
+												"{{url}}"
+											],
+											"path": [
+												"resources",
+												"create"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "post deployment create ec2",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "db79db56-8a3a-4323-858d-0b12f9ea6a84",
+												"exec": [
+													"if (pm.response.code === 201){",
+													"    pm.environment.set(\"deploymentId\", pm.response.json()['deploymentId']);",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"account\": \"SGTI-ST-SB001\",\n\t\"resourceType\": \"EC2\",\n\t\"provider\": \"AWS\",\n\t\"count\": 2,\n\t\"template\": \"linuxEcsBase\",\n\t\"compuTier\": \"bob\",\n\t\"application\": \"TEST\",\n\t\"perimeters\": \"backOffice\"\n}"
+										},
+										"url": {
+											"raw": "{{url}}/resources/create?deploymentId={{deploymentId}}",
+											"host": [
+												"{{url}}"
+											],
+											"path": [
+												"resources",
+												"create"
+											],
+											"query": [
+												{
+													"key": "deploymentId",
+													"value": "{{deploymentId}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "post deployment create s3",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "db79db56-8a3a-4323-858d-0b12f9ea6a84",
+												"exec": [
+													"if (pm.response.code === 201){",
+													"    pm.environment.set(\"deploymentId\", pm.response.json()['deploymentId']);",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"account\": \"SGTI-ST-SB001\",\n\t\"resourceType\": \"S3\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"TEST\"\n}"
+										},
+										"url": {
+											"raw": "{{url}}/resources/create?deploymentId={{deploymentId}}",
+											"host": [
+												"{{url}}"
+											],
+											"path": [
+												"resources",
+												"create"
+											],
+											"query": [
+												{
+													"key": "deploymentId",
+													"value": "{{deploymentId}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "post deployment create ebs",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "db79db56-8a3a-4323-858d-0b12f9ea6a84",
+												"exec": [
+													"if (pm.response.code === 201){",
+													"    pm.environment.set(\"deploymentId\", pm.response.json()['deploymentId']);",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"account\": \"SGTI-ST-SB001\",\n\t\"resourceType\": \"EBS\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"TEST\",\n\t\"path\": \"/dev/sdf\",\n\t\"isPersistent\": false, \n\t\"size\": 10,\n\t\"count\": 1\n}"
+										},
+										"url": {
+											"raw": "{{url}}/resources/create?deploymentId={{deploymentId}}",
+											"host": [
+												"{{url}}"
+											],
+											"path": [
+												"resources",
+												"create"
+											],
+											"query": [
+												{
+													"key": "deploymentId",
+													"value": "{{deploymentId}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "post deployment create alb",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "db79db56-8a3a-4323-858d-0b12f9ea6a84",
+												"exec": [
+													"if (pm.response.code === 201){",
+													"    pm.environment.set(\"deploymentId\", pm.response.json()['deploymentId']);",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"account\": \"SGTI-ST-SB001\",\n\t\"resourceType\": \"ALB\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"TEST\",\n\t\"perimeters\": \"perimeter\"\n}"
+										},
+										"url": {
+											"raw": "{{url}}/resources/create?deploymentId={{deploymentId}}",
+											"host": [
+												"{{url}}"
+											],
+											"path": [
+												"resources",
+												"create"
+											],
+											"query": [
+												{
+													"key": "deploymentId",
+													"value": "{{deploymentId}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "post deployment create sgrp alb",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "db79db56-8a3a-4323-858d-0b12f9ea6a84",
+												"exec": [
+													"if (pm.response.code === 201){",
+													"    pm.environment.set(\"deploymentId\", pm.response.json()['deploymentId']);",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"account\": \"SGTI-ST-SB001\",\n\t\"resourceType\": \"SGRP\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"TEST\",\n\t\"port\": \"80\",\n\t\"source\": \"0.0.0.0/0\",\n\t\"direction\": \"ingress\",\n\t\"forResource\": \"ALB\",\n\t\"toResource\": \"SELF\"\n}"
+										},
+										"url": {
+											"raw": "{{url}}/resources/create?deploymentId={{deploymentId}}",
+											"host": [
+												"{{url}}"
+											],
+											"path": [
+												"resources",
+												"create"
+											],
+											"query": [
+												{
+													"key": "deploymentId",
+													"value": "{{deploymentId}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "post deployment create sgrp ec2",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "db79db56-8a3a-4323-858d-0b12f9ea6a84",
+												"exec": [
+													"if (pm.response.code === 201){",
+													"    pm.environment.set(\"deploymentId\", pm.response.json()['deploymentId']);",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"account\": \"SGTI-ST-SB001\",\n\t\"resourceType\": \"SGRP\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"TEST\",\n\t\"port\": \"80\",\n\t\"source\": \"sg-\",\n\t\"direction\": \"ingress\",\n\t\"forResource\": \"EC2\",\n\t\"toResource\": \"ALB\"\n}"
+										},
+										"url": {
+											"raw": "{{url}}/resources/create?deploymentId={{deploymentId}}",
+											"host": [
+												"{{url}}"
+											],
+											"path": [
+												"resources",
+												"create"
+											],
+											"query": [
+												{
+													"key": "deploymentId",
+													"value": "{{deploymentId}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "* post security group rules alb 80-out",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"port\": \"80\",\n\t\"source\": \"sg-\",\n\t\"direction\": \"egress\",\n\t\"forResource\": \"ALB\",\n\t\"toResource\": \"EC2\"\n}"
+										},
+										"url": {
+											"raw": "{{url}}/resources/add/rule/{{deploymentId}}",
+											"host": [
+												"{{url}}"
+											],
+											"path": [
+												"resources",
+												"add",
+												"rule",
+												"{{deploymentId}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "* post security group rules ec2 443-out",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"port\": \"443\",\n\t\"source\": \"0.0.0.0/0\",\n\t\"direction\": \"egress\",\n\t\"forResource\": \"EC2\",\n\t\"toResource\": \"SELF\"\n}"
+										},
+										"url": {
+											"raw": "{{url}}/resources/add/rule/{{deploymentId}}",
+											"host": [
+												"{{url}}"
+											],
+											"path": [
+												"resources",
+												"add",
+												"rule",
+												"{{deploymentId}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "* post security group rules ec2 80-out",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"port\": \"80\",\n\t\"source\": \"0.0.0.0/0\",\n\t\"direction\": \"egress\",\n\t\"forResource\": \"EC2\",\n\t\"toResource\": \"SELF\"\n}"
+										},
+										"url": {
+											"raw": "{{url}}/resources/add/rule/{{deploymentId}}",
+											"host": [
+												"{{url}}"
+											],
+											"path": [
+												"resources",
+												"add",
+												"rule",
+												"{{deploymentId}}"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"protocolProfileBehavior": {},
+							"_postman_isSubFolder": true
+						},
+						{
+							"name": "ecr",
+							"item": [
+								{
+									"name": "post deployment create ecr",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "db79db56-8a3a-4323-858d-0b12f9ea6a84",
+												"exec": [
+													"if (pm.response.code === 201){",
+													"    pm.environment.set(\"deploymentId\", pm.response.json()['deploymentId']);",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"account\": \"SGTI-ST-SB001\",\n\t\"resourceType\": \"ECR\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"TEST\"\n}"
+										},
+										"url": {
+											"raw": "{{url}}/resources/create",
+											"host": [
+												"{{url}}"
+											],
+											"path": [
+												"resources",
+												"create"
 											]
 										}
 									},
@@ -2601,7 +3273,7 @@
 					"name": "discovery",
 					"item": [
 						{
-							"name": "get resource discovery",
+							"name": "* get resource discovery",
 							"request": {
 								"method": "GET",
 								"header": [],

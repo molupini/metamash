@@ -17,7 +17,7 @@ const labelsSchema = new mongoose.Schema({
         uppercase: true,
         default: 'VPC',
         validate(value){
-            if (!value.match(/(ESX|VM|DC|TMP|HPV|CLS|NETW|PHY|NOSQL|SQL|CON|FUNC|BLOB|VPC|API|SMS|MAIL|GRP|USR|NLB|DNS|APP|WEB|WEBVM|DBVM|EC2|DYN|S3|ECS|BEAN|STATE|EBS|RDS|RULE|ALB)/)){
+            if (!value.match(/(ESX|VM|DC|TMP|HPV|CLS|NETW|PHY|NOSQL|SQL|CON|FUNC|BLOB|VPC|API|SMS|MAIL|GRP|USR|NLB|DNS|APP|WEB|WEBVM|DBVM|EC2|DYN|S3|ECS|ECR|BEAN|STATE|EBS|RDS|RULE|ALB)/)){
                 throw new Error('Please provide valid resourceType')
             }
         }
