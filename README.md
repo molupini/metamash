@@ -7,7 +7,7 @@ Powered by Nodejs and Mongodb.
 
   - Deploy with docker-compose 
   - Important postman.json
-  - Seed Labels
+  - Seed Label
   - Create Connector
   - Create Accounts
 

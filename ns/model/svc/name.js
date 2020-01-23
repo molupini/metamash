@@ -16,7 +16,7 @@ const nameSchema = new mongoose.Schema({
     fullName: {
         type: String,
         minlength: 3,
-        maxlength: 65,
+        maxlength: 128,
         default: 'null',
         // uppercase: true, 
         unique: true

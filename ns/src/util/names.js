@@ -1,17 +1,18 @@
-// LABELS AND TAGS
-const Labels = require('../../model/config/labels')
-const Names = require('../../model/config/names')
-const Configs = require('../../model/config')
+// SVC
+const Label = require('../../model/svc/label')
+const Names = require('../../model/svc/name')
+const Conf = require('../../model/svc/conf')
 // CONTEXT 
-const MainConnector = require('../../model/connector')
-const OrganizationalUnit = require('../../model/context/ou')
-const Environments = require('../../model/context/environments')
-const Perimeters = require('../../model/context/perimeter')
-const Locations = require('../../model/context/locations')
-const Networks = require('../../model/context/networks')
-const Tenants = require('../../model/context/tenants')
-// SUB MODELS
-const Deployments = require('../../model/deployment')
+const Connector = require('../../model/context/connector')
+// const Account = require('../../model/context/account')
+// const Environments = require('../../model/context/environments')
+// const Perimeters = require('../../model/context/perimeter')
+// const Locations = require('../../model/context/locations')
+// const Networks = require('../../model/context/networks')
+const Relationship = require('../../model/context/relationship')
+// APP
+const Deployment = require('../../model/app/deployment')
+
 // UTILS 
 const { setValues, rightKey } = require('./compare')
 
@@ -21,7 +22,7 @@ var buildLabel = async (obj = {}) => {
         var prefix = []
         var result = {}
         // FIND LABEL BASED ON RESOURCE TYPE
-        const label = await Labels.findOne({
+        const label = await Label.findOne({
             resourceType: obj.resourceType
         })
         if(!label){
@@ -128,13 +129,13 @@ var tagBuilder = async (object = {}) => {
         // CONFIGURATION OBJECT 
         var configuration = {}
         // GET MANDATORY FLAGS
-        var defaults = await Configs.findOne({})
+        var conf = await Conf.findOne({})
         // IF NULL THROW ERROR
-        if(!defaults){
+        if(!conf){
             throw new Error('No defaults')
         }
         // COMPARE WITH MANDATORY FLAGS WITH OBJECT CONSTRUCTED 
-        defaults.mandatoryTagsKeys.filter((x) => {
+        conf.mandatoryTagKeys.filter((x) => {
             const found = Object.keys(object).includes(x)
             // IF MISSING RETURN ERROR
             if(!found){
@@ -142,7 +143,7 @@ var tagBuilder = async (object = {}) => {
             }
         })
         // GET LABEL MANDATORY FLAGS
-        var label = await Labels.findOne({
+        var label = await Label.findOne({
             resourceType: object.resourceType
         })
         // IF NULL THROW ERROR
@@ -150,7 +151,7 @@ var tagBuilder = async (object = {}) => {
             throw new Error('Label not found')
         }
         // COMPARE WITH RESOURCE TAGS
-        label.mandatoryTagsKeys.filter((x) => {
+        label.mandatoryTagKeys.filter((x) => {
             const found = Object.keys(object).includes(x)
             // IF MISSING RETURN ERROR
             if(!found){
@@ -171,7 +172,7 @@ var tagBuilder = async (object = {}) => {
         })
         // FILTER TAGS WITH BOTH DEFAULT AND RESOURCE TAGS TO REMOVE CLUTTER
         var result = {}
-        var set = new Set(defaults.mandatoryTagsKeys.concat(label.mandatoryTagsKeys))
+        var set = new Set(conf.mandatoryTagKeys.concat(label.mandatoryTagKeys))
         var filter = Array.from(set)
         for (let i = 0; i < filter.length; i++) {
             const key = filter[i]
@@ -205,7 +206,7 @@ var bodyQuery = (body = {}, query = {}) => {
     object.resourceType = object.resourceType !== undefined ? object.resourceType : undefined
     // object.resourceType = Array.isArray(object.resourceType) ? object.resourceType : [object.resourceType]
     object.locations = object.locations !== undefined ? object.locations : undefined
-    // // TODO, APPLICATION ABBREVIATIONS, NEED TO VER VERIFIED
+    // // TODO, APPLICATION abbrS, NEED TO VER VERIFIED
     object.application = object.application ? object.application : undefined
     // OPTIONAL ELEMENTS 
     object.deploymentId = object.deploymentId !== undefined ? object.deploymentId : 'null'
@@ -246,7 +247,7 @@ var objDocBuilder = async (object = {}) => {
                 // return res.status(404).send({message:'Existing state'})
                 return new Error('Existing state')
             }
-        } else if (!account.remoteStateReadyEnabled && !object.nameOnly && object.application !== 'TFSTATE') {
+        } else if (!account.remoteStateReadyEnabled && !object.nameOnly && object.application !== 'tfsta') {
             // return res.status(404).send({message:'Bad state, Repair'})
             return new Error('Bad state, Repair')
         }
@@ -280,9 +281,9 @@ var objDocBuilder = async (object = {}) => {
             object.deploymentId = deployment._id
         }
         // // FIND TENANT
-        const tenant = await Tenants.findById(account.author)
-        object.businessEntity = tenant.businessEntity
-        object.cluster = tenant.cluster
+        const organization = await Organization.findById(account.author)
+        object.businessEntity = organization.businessEntity
+        object.cluster = organization.cluster
     
         // FIND CONNECTOR
         const connector = await MainConnector.findOne({

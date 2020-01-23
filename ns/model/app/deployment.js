@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
-const OrganizationalUnit = require('../model/context/ou')
-const Tagging = require('../model/tagging')
+// const OrganizationalUnit = require('../context/account')
+const Tagging = require('./tagging')
 
 
 const deploymentSchema = new mongoose.Schema({
@@ -8,7 +8,7 @@ const deploymentSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         // required: true,
         default: null, 
-        ref: 'Tenant'
+        ref: 'Organization'
     },
     // runAs: {
     //     type: String,
@@ -105,7 +105,7 @@ deploymentSchema.pre('save', async function (next) {
         const tagging = await Tagging.findOne({
             author: deployment.id
         })
-        if (tagging.entries.application === 'TFSTATE'){
+        if (tagging.entries.application === 'tfsta'){
             ou.remoteStateDeploymentId = deployment._id
             ou.remoteStateReadyEnabled = state
         }

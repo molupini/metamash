@@ -180,13 +180,13 @@
 			]
 		},
 		{
-			"name": "abbreviations",
+			"name": "abbr",
 			"item": [
 				{
-					"name": "abbreviations",
+					"name": "abbr",
 					"item": [
 						{
-							"name": "get abbreviations",
+							"name": "get abbr",
 							"event": [
 								{
 									"listen": "prerequest",
@@ -203,13 +203,13 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{url}}/config/abbreviations/?element=^S",
+									"raw": "{{url}}/config/abbr/?element=^S",
 									"host": [
 										"{{url}}"
 									],
 									"path": [
 										"config",
-										"abbreviations",
+										"abbr",
 										""
 									],
 									"query": [
@@ -223,7 +223,7 @@
 							"response": []
 						},
 						{
-							"name": "* post abbreviations bulk",
+							"name": "* post abbr bulk",
 							"event": [
 								{
 									"listen": "test",
@@ -231,7 +231,7 @@
 										"id": "263c5d77-a194-4c75-b0ee-7a4ea7d400f9",
 										"exec": [
 											"if (pm.response.code === 201){",
-											"    pm.environment.set(\"abbreviationId\", pm.response.json()._id);",
+											"    pm.environment.set(\"abbrId\", pm.response.json()._id);",
 											"}"
 										],
 										"type": "text/javascript"
@@ -253,13 +253,13 @@
 									"raw": "[\n\t{\n\t\t\"elementLabel\": \"AWS\",\n\t\t\"description\": \"Amazon Web Services Provider\",\n\t\t\"keyLabel\": \"provider\",\n\t\t\"systemDefined\": true\n\t},\n\t{\n\t\t\"elementLabel\": \"AZ\",\n\t\t\"description\": \"Microsoft Azure Provider\",\n\t\t\"keyLabel\": \"provider\",\n\t\t\"systemDefined\": true\n\t},\n\t{\n\t\t\"elementLabel\": \"PRD\",\n\t\t\"description\": \"Production Environment\",\n\t\t\"keyLabel\": \"environment\",\n\t\t\"systemDefined\": true\n\t},\n\t{\n\t\t\"elementLabel\": \"QAT\",\n\t\t\"description\": \"... Environment\",\n\t\t\"keyLabel\": \"environment\",\n\t\t\"systemDefined\": true\n\t},\n\t{\n\t\t\"elementLabel\": \"DEV\",\n\t\t\"description\": \"Development Environment\",\n\t\t\"keyLabel\": \"environment\",\n\t\t\"systemDefined\": true\n\t},\n\t{\n\t\t\"elementLabel\": \"SBX\",\n\t\t\"description\": \"Sandbox Environment\",\n\t\t\"keyLabel\": \"environment\",\n\t\t\"systemDefined\": true\n\t},\n\t{\n\t\t\"elementLabel\": \"SG\",\n\t\t\"description\": \"Sanlam Group Organization\",\n\t\t\"keyLabel\": \"groupOrganization\",\n\t\t\"systemDefined\": true\n\t},\n\t{\n\t\t\"elementLabel\": \"SPF\",\n\t\t\"description\": \"Sanlam Cluster\",\n\t\t\"keyLabel\": \"cluster\",\n\t\t\"systemDefined\": true\n\t},\n\t{\n\t\t\"elementLabel\": \"GLAC\",\n\t\t\"description\": \"Glacier business unit entity\",\n\t\t\"keyLabel\": \"businessEntity\",\n\t\t\"systemDefined\": true\n\t},\n\t{\n\t\t\"elementLabel\": \"INDF\",\n\t\t\"description\": \"Indfin business unit entity\",\n\t\t\"keyLabel\": \"businessEntity\",\n\t\t\"systemDefined\": true\n\t},\n\t{\n\t\t\"elementLabel\": \"EU1\",\n\t\t\"description\": \"AWS Ireland Datacenter Location\",\n\t\t\"keyLabel\": \"location\",\n\t\t\"systemDefined\": true\n\t},\n\t{\n\t\t\"elementLabel\": \"BDC\",\n\t\t\"description\": \"Sanlam Bellville HeadOffice Datacenter Location\",\n\t\t\"keyLabel\": \"location\",\n\t\t\"systemDefined\": true\n\t},\n\t{\n\t\t\"elementLabel\": \"EC2\",\n\t\t\"description\": \"Amazon Classic VM Compu resourceType\",\n\t\t\"keyLabel\": \"resourceType\",\n\t\t\"systemDefined\": true\n\t},\n\t{\n\t\t\"elementLabel\": \"S3\",\n\t\t\"description\": \"Amazon Blob Storage resourceType\",\n\t\t\"keyLabel\": \"resourceType\",\n\t\t\"systemDefined\": true\n\t}\n]\n"
 								},
 								"url": {
-									"raw": "{{url}}/config/abbreviations/seedDefaults",
+									"raw": "{{url}}/config/abbr/seedDefaults",
 									"host": [
 										"{{url}}"
 									],
 									"path": [
 										"config",
-										"abbreviations",
+										"abbr",
 										"seedDefaults"
 									]
 								}
@@ -267,7 +267,7 @@
 							"response": []
 						},
 						{
-							"name": "patch abbreviations",
+							"name": "patch abbr",
 							"request": {
 								"method": "PATCH",
 								"header": [
@@ -283,21 +283,21 @@
 									"raw": "{\n\t\"description\": \"VMware Cluster resourceType\"\n}"
 								},
 								"url": {
-									"raw": "{{url}}/config/abbreviations/{{abbreviationId}}",
+									"raw": "{{url}}/config/abbr/{{abbrId}}",
 									"host": [
 										"{{url}}"
 									],
 									"path": [
 										"config",
-										"abbreviations",
-										"{{abbreviationId}}"
+										"abbr",
+										"{{abbrId}}"
 									]
 								}
 							},
 							"response": []
 						},
 						{
-							"name": "post abbreviations",
+							"name": "post abbr",
 							"event": [
 								{
 									"listen": "test",
@@ -305,7 +305,7 @@
 										"id": "263c5d77-a194-4c75-b0ee-7a4ea7d400f9",
 										"exec": [
 											"if (pm.response.code === 201){",
-											"    pm.environment.set(\"abbreviationId\", pm.response.json()._id);",
+											"    pm.environment.set(\"abbrId\", pm.response.json()._id);",
 											"}"
 										],
 										"type": "text/javascript"
@@ -327,32 +327,32 @@
 									"raw": "{\n\t\"elementLabel\": \"EBS\",\n\t\"description\": \"Amazon Elastic Block Storage\",\n\t\"keyLabel\": \"resourceType\",\n\t\"systemDefined\": true\n}"
 								},
 								"url": {
-									"raw": "{{url}}/config/abbreviations",
+									"raw": "{{url}}/config/abbr",
 									"host": [
 										"{{url}}"
 									],
 									"path": [
 										"config",
-										"abbreviations"
+										"abbr"
 									]
 								}
 							},
 							"response": []
 						},
 						{
-							"name": "remove abbreviations",
+							"name": "remove abbr",
 							"request": {
 								"method": "DELETE",
 								"header": [],
 								"url": {
-									"raw": "{{url}}/config/abbreviations/{{abbreviationId}}/?key=resourceType",
+									"raw": "{{url}}/config/abbr/{{abbrId}}/?key=resourceType",
 									"host": [
 										"{{url}}"
 									],
 									"path": [
 										"config",
-										"abbreviations",
-										"{{abbreviationId}}",
+										"abbr",
+										"{{abbrId}}",
 										""
 									],
 									"query": [
@@ -380,7 +380,7 @@
 										"id": "263c5d77-a194-4c75-b0ee-7a4ea7d400f9",
 										"exec": [
 											"if (pm.response.code === 201){",
-											"    pm.environment.set(\"abbreviationId\", pm.response.json()._id);",
+											"    pm.environment.set(\"abbrId\", pm.response.json()._id);",
 											"}"
 										],
 										"type": "text/javascript"
@@ -429,7 +429,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n\t\"mandatoryTagsKeys\": [\n        \"account\",\n        \"environments\",\n        \"businessEntity\",\n        \"cluster\",\n        \"provider\",\n        \"groupOrganization\",\n        \"resourceType\",\n        \"application\",\n        \"deploymentId\",\n        \"accountId\"\n    ]\n}"
+									"raw": "{\n\t\"mandatoryTagKeys\": [\n        \"account\",\n        \"environments\",\n        \"businessEntity\",\n        \"cluster\",\n        \"provider\",\n        \"groupOrganization\",\n        \"resourceType\",\n        \"application\",\n        \"deploymentId\",\n        \"accountId\"\n    ]\n}"
 								},
 								"url": {
 									"raw": "{{url}}/config/tag/defaults",
@@ -530,6 +530,92 @@
 								"body": {
 									"mode": "raw",
 									"raw": "{\n    \"resourceType\": \"ECR\",\n    \"keyMap\": [\n        \"resourceType\",\n        \"businessEntity\",\n        \"environments\",\n        \"application\"\n    ],\n    \"mandatoryConfigKeys\": [\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{url}}/config/label{{connectId}}",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"config",
+										"label{{connectId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "* post label ecs",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "263c5d77-a194-4c75-b0ee-7a4ea7d400f9",
+										"exec": [
+											"if (pm.response.code === 201){",
+											"    pm.environment.set(\"labelId\", pm.response.json()._id);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"resourceType\" : \"ECS\",\n\t\"isUpperCase\": false,\n\t\"stringDelimiter\": \"-\",\n    \"keyMap\": [\n        \"resourceType\",\n        \"businessEntity\",\n        \"environments\",\n        \"application\"\n    ],\n   \t\"mandatoryConfigKeys\": [\n   \t\t\t\"count\", \n   \t\t\t\"image\", \n   \t\t\t\"version\", \n   \t\t\t\"cpu\",\n   \t\t\t\"memory\",\n   \t\t\t\"port\",\n   \t\t\t\"path\"\n   \t\t],\n   \t\"mandatoryTagKeys\": [\n   \t\t]\n}"
+								},
+								"url": {
+									"raw": "{{url}}/config/label{{connectId}}",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"config",
+										"label{{connectId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "* post label efs",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "263c5d77-a194-4c75-b0ee-7a4ea7d400f9",
+										"exec": [
+											"if (pm.response.code === 201){",
+											"    pm.environment.set(\"labelId\", pm.response.json()._id);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"resourceType\" : \"EFS\",\n\t\"isUpperCase\": false,\n\t\"stringDelimiter\": \"-\",\n    \"keyMap\": [\n        \"resourceType\",\n        \"businessEntity\",\n        \"environments\",\n        \"application\"\n    ]\n}"
 								},
 								"url": {
 									"raw": "{{url}}/config/label{{connectId}}",
@@ -719,6 +805,50 @@
 							"response": []
 						},
 						{
+							"name": "* patch label ecs - source removed",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "bab46783-c523-46d8-add9-c6b39a529460",
+										"exec": [
+											"if (pm.response.code === 201){",
+											"    pm.environment.set(\"labelId\", pm.response.json()._id);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"resourceType\" : \"ECS\",\n    \"keyMap\": [\n        \"resourceType\",\n        \"businessEntity\",\n        \"environments\",\n        \"application\"\n    ],\n   \t\"mandatoryConfigKeys\": [\n   \t\t\"count\", \n   \t\t\"image\", \n   \t\t\"version\", \n   \t\t\"cpu\",\n   \t\t\"memory\",\n   \t\t\"port\",\n   \t\t\"path\"\n   \t]\n}"
+								},
+								"url": {
+									"raw": "{{url}}/config/label/{{connectId}}",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"config",
+										"label",
+										"{{connectId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "*patch label vpc",
 							"event": [
 								{
@@ -746,7 +876,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n\t\"resourceType\" : \"VPC\",\n    \"keyMap\": [\n        \"resourceType\",\n        \"businessEntity\",\n        \"environments\",\n        \"locations\"\n    ],\n    \"padding\": \"000\",\n    \"mandatoryTagsKeys\": [\n    \t\"locations\"\n    \t]\n}"
+									"raw": "{\n\t\"resourceType\" : \"VPC\",\n    \"keyMap\": [\n        \"resourceType\",\n        \"businessEntity\",\n        \"environments\",\n        \"locations\"\n    ],\n    \"padding\": \"000\",\n    \"mandatoryTagKeys\": [\n    \t\"locations\"\n    \t]\n}"
 								},
 								"url": {
 									"raw": "{{url}}/config/label/{{connectId}}",
@@ -763,7 +893,7 @@
 							"response": []
 						},
 						{
-							"name": "patch computiers",
+							"name": "* patch computiers -rds",
 							"request": {
 								"method": "PATCH",
 								"header": [
@@ -777,6 +907,42 @@
 								"body": {
 									"mode": "raw",
 									"raw": "{\n\t\"tier\": [\"db.t2.small\", \"db.t2.large\"]\n}"
+								},
+								"url": {
+									"raw": "{{url}}/config/label/{{labelId}}?tier=compu",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"config",
+										"label",
+										"{{labelId}}"
+									],
+									"query": [
+										{
+											"key": "tier",
+											"value": "compu"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "* patch computiers - ec2",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"tier\": [\"t2.micro\", \"t2.small\", \"t2.medium\", \"t2.large\", \"t2.xlarge\", \"t2.2xlarge\", \"m4.large\"]\n}"
 								},
 								"url": {
 									"raw": "{{url}}/config/label/{{labelId}}?tier=compu",
@@ -869,7 +1035,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n\t\"resourceType\" : \"RDS\"\n}"
+									"raw": "{\n\t\"resourceType\" : \"RDS\",\n    \"mandatoryConfigKeys\": [\n            \"engine\",\n            \"majorRelease\",\n            \"minorRelease\",\n            \"size\",\n            \"compuTier\"\n        ]\n}"
 								},
 								"url": {
 									"raw": "{{url}}/config/label/{{connectId}}",
@@ -1000,7 +1166,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n\t\"resourceType\" : \"EC2\",\n\t\"isUpperCase\": false,\n\t\"stringDelimiter\": \"-\",\n   \t\"mandatoryConfigKeys\": [\n   \t\t\t\"count\", \n   \t\t\t\"template\", \n   \t\t\t\"compuTier\",\n   \t\t\t\"perimeters\"\n   \t\t],\n   \t\"mandatoryTagsKeys\": [\n   \t\t]\n}"
+									"raw": "{\n\t\"resourceType\" : \"EC2\",\n\t\"isUpperCase\": false,\n\t\"stringDelimiter\": \"-\",\n   \t\"mandatoryConfigKeys\": [\n   \t\t\t\"count\", \n   \t\t\t\"template\", \n   \t\t\t\"compuTier\",\n   \t\t\t\"perimeters\"\n   \t\t],\n   \t\"mandatoryTagKeys\": [\n   \t\t]\n}"
 								},
 								"url": {
 									"raw": "{{url}}/config/label/{{connectId}}",
@@ -1410,7 +1576,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"logicalName\": \"linuxEcsBase\",\n\t\"logicalId\": \"ami-08f053fa3d25478f4\"\n}"
+							"raw": "{\n\t\"logicalName\": \"linuxEcsBase\",\n\t\"logicalId\": \"ami-0bf45a5f4ab05b949\"\n}"
 						},
 						"url": {
 							"raw": "{{url}}/context/{{connectId}}?config=resources",
@@ -2802,7 +2968,154 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n\t\"account\": \"SGTI-ST-SB001\",\n\t\"resourceType\": \"EC2\",\n\t\"provider\": \"AWS\",\n\t\"count\": 2,\n\t\"template\": \"linuxEcsBase\",\n\t\"compuTier\": \"bob\",\n\t\"application\": \"TEST\",\n\t\"perimeters\": \"backOffice\"\n}"
+											"raw": "{\n\t\"account\": \"SGTI-ST-SB001\",\n\t\"resourceType\": \"EC2\",\n\t\"provider\": \"AWS\",\n\t\"count\": 2,\n\t\"template\": \"linuxEcsBase\",\n\t\"compuTier\": \"t2.medium\",\n\t\"application\": \"TEST\",\n\t\"perimeters\": \"backOffice\"\n}"
+										},
+										"url": {
+											"raw": "{{url}}/resources/create?deploymentId={{deploymentId}}",
+											"host": [
+												"{{url}}"
+											],
+											"path": [
+												"resources",
+												"create"
+											],
+											"query": [
+												{
+													"key": "deploymentId",
+													"value": "{{deploymentId}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "post deployment create rds",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "db79db56-8a3a-4323-858d-0b12f9ea6a84",
+												"exec": [
+													"if (pm.response.code === 201){",
+													"    pm.environment.set(\"deploymentId\", pm.response.json()['deploymentId']);",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"account\": \"SGTI-ST-SB001\",\n\t\"resourceType\": \"RDS\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"TEST\",\n\t\"engine\": \"mysql\",\n\t\"majorRelease\": \"5.7\",\n\t\"minorRelease\": \"19\",\n\t\"size\": 1,\n\t\"compuTier\": \"db.t2.small\"\n}"
+										},
+										"url": {
+											"raw": "{{url}}/resources/create?deploymentId={{deploymentId}}",
+											"host": [
+												"{{url}}"
+											],
+											"path": [
+												"resources",
+												"create"
+											],
+											"query": [
+												{
+													"key": "deploymentId",
+													"value": "{{deploymentId}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "post deployment create ecs express",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "db79db56-8a3a-4323-858d-0b12f9ea6a84",
+												"exec": [
+													"if (pm.response.code === 201){",
+													"    pm.environment.set(\"deploymentId\", pm.response.json()['deploymentId']);",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"account\": \"SGTI-ST-SB001\",\n\t\"resourceType\": \"ECS\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"TEST\",\n\t\"count\": 1,\n\t\"image\": \"app\",\n\t\"version\": \"prod\",\n\t\"cpu\": 10, \n\t\"memory\": 512,\n\t\"port\":8888,\n\t\"path\": \"/var/www/html\"\n}"
+										},
+										"url": {
+											"raw": "{{url}}/resources/create?deploymentId={{deploymentId}}",
+											"host": [
+												"{{url}}"
+											],
+											"path": [
+												"resources",
+												"create"
+											],
+											"query": [
+												{
+													"key": "deploymentId",
+													"value": "{{deploymentId}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "post deployment create ecs wordpress",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "db79db56-8a3a-4323-858d-0b12f9ea6a84",
+												"exec": [
+													"if (pm.response.code === 201){",
+													"    pm.environment.set(\"deploymentId\", pm.response.json()['deploymentId']);",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"account\": \"SGTI-ST-SB001\",\n\t\"resourceType\": \"ECS\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"TEST\",\n\t\"count\": 1,\n\t\"image\": \"app\",\n\t\"version\": \"prod\",\n\t\"cpu\": 256, \n\t\"memory\": 1024,\n\t\"port\":80,\n\t\"path\": \"/var/www/html\"\n}"
 										},
 										"url": {
 											"raw": "{{url}}/resources/create?deploymentId={{deploymentId}}",
@@ -2873,7 +3186,7 @@
 									"response": []
 								},
 								{
-									"name": "post deployment create ebs",
+									"name": "post deployment create ebs optional",
 									"event": [
 										{
 											"listen": "test",
@@ -2901,6 +3214,55 @@
 										"body": {
 											"mode": "raw",
 											"raw": "{\n\t\"account\": \"SGTI-ST-SB001\",\n\t\"resourceType\": \"EBS\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"TEST\",\n\t\"path\": \"/dev/sdf\",\n\t\"isPersistent\": false, \n\t\"size\": 10,\n\t\"count\": 1\n}"
+										},
+										"url": {
+											"raw": "{{url}}/resources/create?deploymentId={{deploymentId}}",
+											"host": [
+												"{{url}}"
+											],
+											"path": [
+												"resources",
+												"create"
+											],
+											"query": [
+												{
+													"key": "deploymentId",
+													"value": "{{deploymentId}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "post deployment create efs wordpress",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "db79db56-8a3a-4323-858d-0b12f9ea6a84",
+												"exec": [
+													"if (pm.response.code === 201){",
+													"    pm.environment.set(\"deploymentId\", pm.response.json()['deploymentId']);",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"account\": \"SGTI-ST-SB001\",\n\t\"resourceType\": \"EFS\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"TEST\"\n}"
 										},
 										"url": {
 											"raw": "{{url}}/resources/create?deploymentId={{deploymentId}}",
@@ -3020,7 +3382,56 @@
 									"response": []
 								},
 								{
-									"name": "post deployment create sgrp ec2",
+									"name": "post deployment create sgrp ec2 wordpress",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "db79db56-8a3a-4323-858d-0b12f9ea6a84",
+												"exec": [
+													"if (pm.response.code === 201){",
+													"    pm.environment.set(\"deploymentId\", pm.response.json()['deploymentId']);",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"account\": \"SGTI-ST-SB001\",\n\t\"resourceType\": \"SGRP\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"TEST\",\n\t\"port\": \"8080\",\n\t\"source\": \"sg-\",\n\t\"direction\": \"ingress\",\n\t\"forResource\": \"EC2\",\n\t\"toResource\": \"ALB\"\n}"
+										},
+										"url": {
+											"raw": "{{url}}/resources/create?deploymentId={{deploymentId}}",
+											"host": [
+												"{{url}}"
+											],
+											"path": [
+												"resources",
+												"create"
+											],
+											"query": [
+												{
+													"key": "deploymentId",
+													"value": "{{deploymentId}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "post deployment create sgrp ec2 express",
 									"event": [
 										{
 											"listen": "test",
@@ -3069,7 +3480,87 @@
 									"response": []
 								},
 								{
-									"name": "* post security group rules alb 80-out",
+									"name": "post deployment create sgrp rds",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "db79db56-8a3a-4323-858d-0b12f9ea6a84",
+												"exec": [
+													"if (pm.response.code === 201){",
+													"    pm.environment.set(\"deploymentId\", pm.response.json()['deploymentId']);",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"account\": \"SGTI-ST-SB001\",\n\t\"resourceType\": \"SGRP\",\n\t\"provider\": \"AWS\",\n\t\"application\": \"TEST\",\n\t\"port\": \"3306\",\n\t\"source\": \"sg-\",\n\t\"direction\": \"ingress\",\n\t\"forResource\": \"RDS\",\n\t\"toResource\": \"EC2\"\n}"
+										},
+										"url": {
+											"raw": "{{url}}/resources/create?deploymentId={{deploymentId}}",
+											"host": [
+												"{{url}}"
+											],
+											"path": [
+												"resources",
+												"create"
+											],
+											"query": [
+												{
+													"key": "deploymentId",
+													"value": "{{deploymentId}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "* post security group rules alb 80-out wordpress  ( todo default )",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"port\": \"8080\",\n\t\"source\": \"sg-\",\n\t\"direction\": \"egress\",\n\t\"forResource\": \"ALB\",\n\t\"toResource\": \"EC2\"\n}"
+										},
+										"url": {
+											"raw": "{{url}}/resources/add/rule/{{deploymentId}}",
+											"host": [
+												"{{url}}"
+											],
+											"path": [
+												"resources",
+												"add",
+												"rule",
+												"{{deploymentId}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "* post security group rules alb 80-out express  ( todo default )",
 									"request": {
 										"method": "POST",
 										"header": [
@@ -3100,7 +3591,69 @@
 									"response": []
 								},
 								{
-									"name": "* post security group rules ec2 443-out",
+									"name": "* post security group rules alb 8080-in wordpress  ( todo default )",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"port\": \"8080\",\n\t\"source\": \"0.0.0.0/0\",\n\t\"direction\": \"ingress\",\n\t\"forResource\": \"ALB\",\n\t\"toResource\": \"SELF\"\n}"
+										},
+										"url": {
+											"raw": "{{url}}/resources/add/rule/{{deploymentId}}",
+											"host": [
+												"{{url}}"
+											],
+											"path": [
+												"resources",
+												"add",
+												"rule",
+												"{{deploymentId}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "* post security group rules ec2 22-in opional",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"port\": \"22\",\n\t\"source\": \"0.0.0.0/0\",\n\t\"direction\": \"ingress\",\n\t\"forResource\": \"EC2\",\n\t\"toResource\": \"SELF\"\n}"
+										},
+										"url": {
+											"raw": "{{url}}/resources/add/rule/{{deploymentId}}",
+											"host": [
+												"{{url}}"
+											],
+											"path": [
+												"resources",
+												"add",
+												"rule",
+												"{{deploymentId}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "* post security group rules ec2 443-out  ( todo default )",
 									"request": {
 										"method": "POST",
 										"header": [
@@ -3131,7 +3684,7 @@
 									"response": []
 								},
 								{
-									"name": "* post security group rules ec2 80-out",
+									"name": "* post security group rules ec2 80-out  ( todo default )",
 									"request": {
 										"method": "POST",
 										"header": [
@@ -3145,6 +3698,37 @@
 										"body": {
 											"mode": "raw",
 											"raw": "{\n\t\"port\": \"80\",\n\t\"source\": \"0.0.0.0/0\",\n\t\"direction\": \"egress\",\n\t\"forResource\": \"EC2\",\n\t\"toResource\": \"SELF\"\n}"
+										},
+										"url": {
+											"raw": "{{url}}/resources/add/rule/{{deploymentId}}",
+											"host": [
+												"{{url}}"
+											],
+											"path": [
+												"resources",
+												"add",
+												"rule",
+												"{{deploymentId}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "* post security group rules ec2 3306-rds ( todo default )",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"port\": \"3306\",\n\t\"source\": \"sg-\",\n\t\"direction\": \"egress\",\n\t\"forResource\": \"EC2\",\n\t\"toResource\": \"RDS\"\n}"
 										},
 										"url": {
 											"raw": "{{url}}/resources/add/rule/{{deploymentId}}",
@@ -3656,14 +4240,14 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{url}}/resources/delete/5dca83efa77d6c25177db540",
+							"raw": "{{url}}/resources/delete/5dea240d1d5ab00019ad90ff",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
 								"resources",
 								"delete",
-								"5dca83efa77d6c25177db540"
+								"5dea240d1d5ab00019ad90ff"
 							]
 						}
 					},

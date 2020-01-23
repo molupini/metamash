@@ -23,12 +23,12 @@
 			"enabled": true
 		},
 		{
-			"key": "tenantId",
+			"key": "organizationId",
 			"value": "",
 			"enabled": true
 		},
 		{
-			"key": "abbreviationId",
+			"key": "abbrId",
 			"value": "",
 			"enabled": true
 		},
@@ -54,6 +54,6 @@
 		}
 	],
 	"_postman_variable_scope": "environment",
-	"_postman_exported_at": "2019-11-19T12:38:36.621Z",
-	"_postman_exported_using": "Postman/7.10.0"
+	"_postman_exported_at": "2020-01-14T14:16:40.286Z",
+	"_postman_exported_using": "Postman/7.13.0"
 }

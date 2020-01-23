@@ -1,7 +1,7 @@
 const AWS = require('aws-sdk')
 const uuid = require('uuid')
 const { logger } = require('../../src/util/log')
-const MainConnector = require('../../model/connector')
+const MainConnector = require('../../model/context/connector')
 var connectorId = null
 
 var discover = async (key, secret, connector) => {

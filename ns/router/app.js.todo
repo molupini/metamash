@@ -2,16 +2,20 @@ const express = require('express')
 const router = new express.Router()
 
 // CONTEXT 
-const Resources = require('../model/context/resources')
-const Names = require('../model/config/names')
-const Labels = require('../model/config/labels')
-const SecurityRules = require('../model/config/security')
-const Deployments = require('../model/deployment')
-const Tagging = require('../model/tagging')
-const Perimeters = require('../model/context/perimeter')
-const OrganizationalUnit = require('../model/context/ou')
-const MainConnector = require('../model/connector')
-// const MiscConfig = require('../model/misc')
+
+// const Perimeters = require('../model/context/perimeter')
+// const Account = require('../model/context/account')
+const Connector = require('../model/context/connector')
+
+// SVC
+const Names = require('../model/svc/name')
+// const Label = require('../model/svc/labels')
+
+// APP
+const ResourceSettings = require('../model/app/config')
+const Deployments = require('../model/app/deployment')
+const Tagging = require('../model/app/tagging')
+const Resource = require('../model/app/resource')
 
 // UTILS 
 const { bodyQuery, objDocBuilder, tagBuilder, logicalNameBuilder } = require('../src/util/names')
@@ -46,14 +50,15 @@ router.post('/resources/create', auth, async (req, res) => {
         // // TAG BUILDER WILL COMPARE CURRENT OBJECT AND RETURN TAG AND CONFIG FOR THIS RESOURCE
         // // RESOURCE ELEMENT AND CONFIG ELEMENT VERIFICATION "IF ANY MISSING ELEMENTS" PERFORMED
         // // IF THE ELEMENT IS REQUIRED IN BOTH TAG AND CONFIGURATION IT MUST BE DECLARED IN BOTH, SEE LABEL
-        // // TODO NEED TO CONFIRM THAT IF STRING FOR TAG IS NOT DEFINED IN ABBREVIATION THAT A ERROR IS THROWN
-        // // > RATHER PERFORM ABOVE WHEN SEEDING, INSERTING ABBREVIATIONS 
+        // // TODO NEED TO CONFIRM THAT IF STRING FOR TAG IS NOT DEFINED IN abbr THAT A ERROR IS THROWN
+        // // > RATHER PERFORM ABOVE WHEN SEEDING, INSERTING abbrS 
         var builder = await tagBuilder(object)
         // ERROR IN CALLING FUNCTION
         if(builder.name){
             // throw new Error(builder.message)
             return res.status(404).send({message: builder.message})
         }
+        // debugging
         // console.log('tagBuilder object =')
         // console.log(builder)
 
@@ -85,13 +90,12 @@ router.post('/resources/create', auth, async (req, res) => {
 
         // #
         // // SEED RESOURCE
-        resource = await new Resources({
+        resource = await new Resource({
             author: object.deploymentId,
             owner: object.accountId,
             resourceType: builder.tag.resourceType,
             logicalName: logicalName,
-            userDefined: true,
-            misc: builder.configuration
+            userDefined: true
         })
         await resource.save()
 
@@ -127,13 +131,12 @@ router.post('/resources/create', auth, async (req, res) => {
 
                 // // SEED RESOURCE
                 builder.configuration.count = 1
-                resource = await new Resources({
+                resource = await new Resource({
                     author: object.deploymentId,
                     owner: object.accountId,
                     resourceType: builder.tag.resourceType,
                     logicalName: logicalName.replace(re, iteration),
-                    userDefined: true,
-                    misc: builder.configuration
+                    userDefined: true
                 })
                 await resource.save()
 
@@ -149,13 +152,12 @@ router.post('/resources/create', auth, async (req, res) => {
             
         }else{
             // // SEED RESOURCE
-            resource = await new Resources({
+            resource = await new Resource({
                 author: object.deploymentId,
                 owner: object.accountId,
                 resourceType: builder.tag.resourceType,
                 logicalName: logicalName,
-                userDefined: true,
-                misc: builder.configuration
+                userDefined: true
             })
             await resource.save()
 
@@ -170,6 +172,18 @@ router.post('/resources/create', auth, async (req, res) => {
         // console.log(ln)
         */
         
+        // // SEED RESOURCE SETTINGS
+        if (builder.configuration){
+            const resourceSettings = await new ResourceSettings({
+                author : resource._id,
+                owner : object.deploymentId,
+                resourceType : resource.resourceType,
+                ...builder.configuration
+            })
+            
+            await resourceSettings.save()
+        }
+
         // // SEED TAGS 
         // // USING EXISTING DEPLOYMENT/CART FOR RESOURCE TO GROUP RESOURCES
         var tagging = null
@@ -188,6 +202,7 @@ router.post('/resources/create', auth, async (req, res) => {
 
         res.status(201).send({deploymentId:object.deploymentId})
     } catch (e) {
+        // logger.log('error', `${(e.message)}`)
         res.status(500).send(e)
     }
 })
@@ -226,8 +241,8 @@ router.post('/resources/create/multiple', auth, async (req, res) => {
             // // TAG BUILDER WILL COMPARE CURRENT OBJECT AND RETURN TAG AND CONFIG FOR THIS RESOURCE
             // // RESOURCE ELEMENT AND CONFIG ELEMENT VERIFICATION "IF ANY MISSING ELEMENTS" PERFORMED
             // // IF THE ELEMENT IS REQUIRED IN BOTH TAG AND CONFIGURATION IT MUST BE DECLARED IN BOTH, SEE LABEL
-            // // TODO NEED TO CONFIRM THAT IF STRING FOR TAG IS NOT DEFINED IN ABBREVIATION THAT A ERROR IS THROWN
-            // // > RATHER PERFORM ABOVE WHEN SEEDING, INSERTING ABBREVIATIONS 
+            // // TODO NEED TO CONFIRM THAT IF STRING FOR TAG IS NOT DEFINED IN abbr THAT A ERROR IS THROWN
+            // // > RATHER PERFORM ABOVE WHEN SEEDING, INSERTING abbrS 
             var builder = await tagBuilder(dolly)
             // ERROR IN CALLING FUNCTION, 
             if(builder.name){
@@ -263,13 +278,12 @@ router.post('/resources/create/multiple', auth, async (req, res) => {
             // console.log(deployment)
 
             // // SEED RESOURCE
-            const resource = await new Resources({
+            const resource = await new Resource({
                 author: object.deploymentId,
                 owner: dolly.accountId,
                 resourceType: builder.tag.resourceType,
                 logicalName: logicalName,
-                userDefined: true, 
-                misc: builder.configuration
+                userDefined: true
             })
             await resource.save()
             // debugging
@@ -286,6 +300,16 @@ router.post('/resources/create/multiple', auth, async (req, res) => {
             // console.log('name =')
             // console.log(name)
             
+            // // SEED RESOURCE SETTINGS
+            if (builder.configuration){
+                const resourceSettings = await new ResourceSettings({
+                    author : resource._id,
+                    owner : object.deploymentId,
+                    resourceType : resource.resourceType,
+                    ...builder.configuration
+                })
+                await resourceSettings.save()
+            }
             // // SEED TAGS 
             // // USING EXISTING DEPLOYMENT/CART FOR RESOURCE TO GROUP RESOURCES
             var tagging = null
@@ -308,6 +332,7 @@ router.post('/resources/create/multiple', auth, async (req, res) => {
 
         await res.status(201).send({deploymentId:object.deploymentId})
     } catch (e) {
+        // logger.log('error', `${(e.message)}`)
         res.status(500).send(e)
     }
 })
@@ -320,6 +345,7 @@ router.get('/resources/deployments', auth, async (req, res) => {
         const deployment = await Deployments.find({}, null, Options)
         res.status(200).send(deployment)
     } catch (e) {
+        // logger.log('error', `${(e.message)}`)
         res.status(500).send(e)
     }
 })
@@ -336,22 +362,28 @@ router.get('/resources/discovery/:id', async (req, res) => {
         }
         res.status(200).send()
     } catch (e) {
+        // logger.log('error', `${(e.message)}`)
         res.status(500).send(e)
     }
 })
 
 // USED BY SERVICE TO UPDATE LOGICAL ID'S 
 router.patch('/resources/update/:id', auth, async (req, res) => {
-    const exclude = ['author', 'owner', '_id', 'misc']
-    const isValid = valid(req.body, Resources.schema.obj, exclude)
+    const exclude = ['author', 'owner', '_id']
+    // console.log('req.body =')
+    // console.log(req.body)
+    const isValid = valid(req.body, Resource.schema.obj, exclude)
+    // console.log('isValid =')
+    // console.log(isValid)
     if (!isValid) {
         return res.status(400).send({message:'Please provide a valid input'})
     }
     try {
-        const resource = await Resources.findById(req.params.id)
+        const resource = await Resource.findById(req.params.id)
         if (!resource) {
             return res.status(404).send({message:'Not Found'})
         }
+        // debugging
         // console.log(resource)
         const body = Object.keys(req.body)
         body.forEach(value => {
@@ -364,25 +396,64 @@ router.patch('/resources/update/:id', auth, async (req, res) => {
     }
 })
 
+// USED BY SERVICE TO UPDATE LOGICAL ID'S 
+router.patch('/resources/updateSetting/:id', auth, async (req, res) => {
+    try {
+        var resource = await Resource.findById(req.params.id)
+        if (!resource) {
+            return res.status(404).send({message:'Not Found'})
+        }
+        const setting = await ResourceSettings.findOne({
+            author: resource.id
+        })
+        const isValid = valid(req.body, setting.schema.obj, exclude)
+        if (!isValid) {
+            return res.status(400).send({message:'Please provide a valid input'})
+        }
+        if (isValid){
+            const body = Object.keys(req.body)
+            for(let i = 0; i < body.length; i++){
+                const value = body[i]
+                setting[value] = req.body[value]
+            }
+            await setting.save()
+        }
+        res.status(201).send(setting)
+    } catch (e) {
+        res.status(500).send({error: e.message})
+    }
+})
+
 router.post('/resources/add/rule/:id', auth, async (req, res) => {
     try {
         // TODO NEED TO PROVIDE A ENDPOINT TO DELETE RULES 
         // await SecurityRules.deleteMany({
         // })
-        var group = await Resources.find({
+        var group = await Resource.find({
             author: req.params.id,
             resourceType: 'SGRP'
         })
-        group = group.filter((x) => {
-            return x.misc.forResource === req.body.forResource
-        })
+        // debugging
+        // console.log('group =')
+        // console.log(group.length)
+        var setting = null
+        for (let x = 0; x < group.length; x ++){
+            // console.log('group =')
+            // console.log(group[x])
+            setting = await ResourceSettings.findOne({
+                owner: req.params.id,
+                author: group[x]._id
+            })
+            // console.log('setting =')
+            // console.log(setting)
+        }
         // debugging
         // console.log('group =')
         // console.log(group)
-        if(!group){
+        if(!setting){
             return res.status(404).send({message:'Group not Found'})
         }
-        const resource = await Resources.findOne({
+        const resource = await Resource.findOne({
             author: req.params.id,
             resourceType: req.body.forResource
         })
@@ -391,23 +462,35 @@ router.post('/resources/add/rule/:id', auth, async (req, res) => {
         if(!resource){
             return res.status(404).send({message:'Resource not Found'})
         }
-  
-        const securityRule = await SecurityRules.find({
+        
+        // TODO DEPRECATE SECURITY RULES DOCUMENTS, MOVE TO RESOURCE SETTINGS
+        // const securityRule = await SecurityRules.find({
+        //     owner: req.params.id,
+        //     ...req.body
+        // })
+        const settings = await ResourceSettings.find({
             owner: req.params.id,
             ...req.body
         })
         // debugging
-        // console.log('securityRule =')
-        // console.log(securityRule)
-        if(securityRule.length !== 0){
+        // console.log('settings =')
+        // console.log(settings)
+        if(settings.length !== 0){
             return res.status(404).send({message:'Rule Found'})
         }
         if(group.length >= 1){
             group = group[0]
         }
-        const rule = new SecurityRules({
+        // TODO DEPRECATE SECURITY RULES DOCUMENTS, MOVE TO RESOURCE SETTINGS
+        // const rule = new SecurityRules({
+        //     author: group._id,
+        //     owner: req.params.id, 
+        //     ...req.body
+        // })
+        const rule = await new ResourceSettings({
             author: group._id,
             owner: req.params.id, 
+            resourceType: group.resourceType,
             ...req.body
         })
         await rule.save()
@@ -433,18 +516,20 @@ router.get('/resources/query/:id', auth, async (req, res) => {
         const tagging = await Tagging.findOne({
             author: deployment._id
         })
-        var resources = await Resources.find({
+        var resources = await Resource.find({
             author: deployment._id
         })
         const connector = await MainConnector.findOne({
             _id: account.owner
         })
-        // console.log(connector)
+        const settings = await ResourceSettings.find({
+            owner: deployment._id
+        })
         if(!resources){
-            return res.status(404).send({message:'Resources not found'})
+            return res.status(404).send({message:'Resource not found'})
         }
         if(resources.length > 1){
-            resourceType = await Resources.find({
+            resourceType = await Resource.find({
                 author: deployment._id
             }).distinct('resourceType')
             if(resourceType.length > 1){
@@ -453,48 +538,37 @@ router.get('/resources/query/:id', auth, async (req, res) => {
             }        
         }
         if(req.query.document === 'resources'){
-            // console.log(resources)
             if (resources.length > 0){
                 for (let i = 0; i < resources.length; i++){
                     if (resources[i]['resourceType'] !== 'SGRP'){
                         // console.log(resources[i])
                         var inner = {}
                         const key = resources[i]['resourceType']
+                        // // debugging
+                        // console.log('key =')
+                        // console.log(key)
                         inner['logicalName'] = resources[i]['logicalName']
                         inner['resourceId'] = resources[i]['id']
                         if (resources[i]['logicalId'] !== 'NULL'){
                             inner['logicalId'] = resources[i]['logicalId']
                         }
                         inner['resourceType'] = resources[i]['resourceType']
-                        if (resources[i]['misc'] !== undefined){
-                            Object.keys(resources[i]['misc']).forEach((x) => {
-                                const val = resources[i]['misc'][x]
+                        // JOIN SETTING AND RESOURCE 
+                        const setting = await ResourceSettings.findOne({
+                            author: inner['resourceId'] 
+                        })
+                        const clone = setting.toObject()
+                        delete clone._id
+                        delete clone.author
+                        delete clone.owner
+                        delete clone.__v
+                        if (Object.keys(clone).length > 0){
+                            Object.keys(clone).forEach((x) => {
+                                const val = clone[x]
                                 inner[x] =  val !== typeof String ? val.toString() : val
                             })
                         }
-                        if(object[key] !== undefined){
-                            Object.keys(object[key]).forEach(element => {
-                                if(element === 'count'){
-                                    const num = parseInt(object[key][element]) + parseInt(inner[element])
-                                    object[key][element] = num.toString()
-                                }
-                                else if (element.match(/(logicalName|logicalId|resourceId)/)){
-                                    object[key][element] = object[key][element].concat(';', inner[element])
-                                }
-                                // EBS SPECIFICALLY 
-                                else if (element.match(/(path|size)/) && object[key][element] !== "NULL"){
-                                    object[key][element] = object[key][element].concat(';', inner[element])
-                                }
-                                // SECURITY GROUP SPECIFICALLY
-                                else if (element.match(/(port|direction|source)/) && object[key][element] !== "NULL"){
-                                    object[key][element] = object[key][element].concat(';', inner[element])
-                                }
-                            })
-                        } 
-                        else {
-                            object[key] = inner
-                        }
-                        // console.log(object.keys(key))
+                        object[key] = inner
                     }
                 }
             }
@@ -514,9 +588,19 @@ router.get('/resources/query/:id', auth, async (req, res) => {
                             inner['logicalId'] = resources[i]['logicalId']
                         }
                         inner['resourceType'] = resources[i]['resourceType']
-                        if (resources[i]['misc'] !== undefined){
-                            Object.keys(resources[i]['misc']).forEach((x) => {
-                                const val = resources[i]['misc'][x]
+                        // JOIN SETTING AND RESOURCE 
+                        const setting = await ResourceSettings.findOne({
+                            author: inner['resourceId'] 
+                        })
+                        const clone = setting.toObject()
+                        delete clone._id
+                        delete clone.author
+                        delete clone.owner
+                        delete clone.__v
+
+                        if (Object.keys(clone).length > 0){
+                            Object.keys(clone).forEach((x) => {
+                                const val = clone[x]
                                 inner[x] =  val !== typeof String ? val.toString() : val
                             })
                         }
@@ -526,7 +610,6 @@ router.get('/resources/query/:id', auth, async (req, res) => {
                         else {
                             object[key] = [inner]
                         }
-                        // console.log(object.keys(key))
                     }
                 }
             }
@@ -546,10 +629,14 @@ router.get('/resources/query/:id', auth, async (req, res) => {
                 // console.log('count =', resources.length)
                 // console.log()
                 for (let i = 0; i < resources.length; i++){
-                    const rule = await SecurityRules.find({
+                    // const rule = await SecurityRules.find({
+                    //     author: resources[i].id
+                    // })
+                    // debugging
+
+                    var rule = await ResourceSettings.find({
                         author: resources[i].id
                     })
-                    // debugging
                     // console.log(`rule for, ${resources[i].id} = `)
                     // console.log(rule)
                     // console.log('count =', rule.length)
@@ -562,10 +649,9 @@ router.get('/resources/query/:id', auth, async (req, res) => {
                                 resourceType: resources[i]['resourceType'],
                                 logicalId: resources[i]['logicalId'],
                                 resourceId: resources[i]['_id']
-                                // ,
-                                // toResource: resources[i].misc['toResource']
                             }
-                            const rkey = resources[i].misc['forResource']
+
+                            const rkey = rule[x]['forResource']
                             if(resourceObject[rkey] === undefined){
                                 resourceObject[rkey] = resource
                             }
@@ -606,11 +692,13 @@ router.get('/resources/query/:id', auth, async (req, res) => {
         }
         // DISCOVERY IS USED FOR FINDING RESOURCES THAT ARE DEPLOYED POST, API AND NOT USER DEFINED
         if(req.query.document === 'discovery'){
-            const discovery = await Resources.find({
+            const discovery = await Resource.find({
                 owner: account.owner,
                 author: account.owner,
                 userDefined: false
             })
+            // debugging
+            // console.log('discovery =')
             // console.log(discovery)
             if (discovery.length > 0){
                 for (let i = 0; i < discovery.length; i++){
@@ -619,25 +707,54 @@ router.get('/resources/query/:id', auth, async (req, res) => {
                     const key = discovery[i]['resourceType']
                     inner['logicalName'] = discovery[i]['logicalName']
                     inner['logicalId'] = discovery[i]['logicalId']
+                    inner['resourceType'] = discovery[i]['resourceType']
+                    inner['resourceId'] = discovery[i]['_id']
+                    // debugging
+                    // console.log('inner =')
+                    // console.log(inner)
+                    const setting = await ResourceSettings.findOne({
+                        author: inner['resourceId']
+                    })
+                    // debugging
+                    // console.log('setting =')
+                    // console.log(setting)
+                    // TODO, TEMP WILL REMOVE CONDITIONAL ONCE ALL NEW RESOURCES HAVE CREATED SETTINGS AT THE MOMENT NULL BELOW 
+                    // TODO, COPY RESOURCE DOCUMENT USE OF RESOURCE SETTINGS 
+                    var clone = {}
+                    if(setting){
+                        clone = setting.toObject()
+                        delete clone._id
+                        delete clone.author
+                        delete clone.owner
+                        delete clone.__v
+                    } 
                     // TODO EVAL THE BELOW MATCH MIGHT BE TO SPECIFIC
                     const re = new RegExp(account.account, 'i')
                     found = inner['logicalName'].match(re)
-                    if (found && discovery[i]['misc'] !== undefined){
-                        Object.keys(discovery[i]['misc']).forEach((x) => {
-                            inner[x] = discovery[i]['misc'][x]
+                    if(found){
+                        inner['accountMatch'] = 'true'
+                    } else {
+                        inner['accountMatch'] = 'false'
+                    }
+                    if (Object.keys(clone).length > 0){
+                        Object.keys(clone).forEach((x) => {
+                            inner[x] = clone[x]
                         })
                     }
-                    object[key] = found ? inner : null
+                    object[key] = inner
                 }
             }
             return res.status(200).send({resources: object})
         }
         // PARENT RESOURCES, WILL FIND RESOURCES THAT ARE CREATED FOR THIS SPECIFIC "OWNER =" ACCOUNT 
         if(req.query.document === 'parent'){
-            var parent = await Resources.find({
+            var parent = await Resource.find({
                 owner: account._id,
                 userDefined: true
             })
+            // debugging
+            // console.log('parent =')
+            // console.log(parent)
             parent = parent.filter ((x) => {
                 return x.logicalId !== 'NULL'
             })
@@ -646,20 +763,40 @@ router.get('/resources/query/:id', auth, async (req, res) => {
                     var inner = {}
                     var found = false
                     const key = parent[i]['resourceType']
-                    const label = await Labels.findOne({
-                        resourceType: key
-                    })
-                    const accountCase = label.isUpperCase ? account.account.toUpperCase() : account.account.toLowerCase()
+                    // const label = await Label.findOne({
+                    //     resourceType: key
+                    // })
+                    // const accountCase = label.isUpperCase ? account.account.toUpperCase() : account.account.toLowerCase()
+                    // console.log('accountCase =')
+                    // console.log(accountCase)
                     inner['logicalName'] = parent[i]['logicalName']
                     inner['logicalId'] = parent[i]['logicalId']
+                    inner['resourceType'] = parent[i]['resourceType']
+                    inner['resourceId'] = parent[i]['id']
+
+                    const setting = await ResourceSettings.findOne({
+                        author: inner['resourceId']
+                    })
+                    // TODO, TEMP WILL REMOVE CONDITIONAL ONCE ALL NEW RESOURCES HAVE CREATED SETTINGS AT THE MOMENT NULL BELOW 
+                    // TODO, COPY RESOURCE DOCUMENT USE OF RESOURCE SETTINGS 
+                    var clone = {}
+                    if(setting){
+                        clone = setting.toObject()
+                        delete clone._id
+                        delete clone.author
+                        delete clone.owner
+                        delete clone.__v
+                    } 
                     // TODO EVAL THE BELOW MATCH MIGHT BE TO SPECIFIC 
-                    found = inner['logicalName'].match(accountCase)
-                    if (found && parent[i]['misc'] !== undefined){
-                        Object.keys(parent[i]['misc']).forEach((x) => {
-                            inner[x] = parent[i]['misc'][x]
+                    // found = inner['logicalName'].match(accountCase)
+                    const re = new RegExp(account.account, 'i')
+                    found = inner['logicalName'].match(re)
+                    if (found && Object.keys(clone).length > 0){
+                        Object.keys(clone).forEach((x) => {
+                            inner[x] = clone[x]
                         })
+                        object[key] = inner
                     }
-                    object[key] = found ? inner : null
                 }
             }
             return res.status(200).send({resources: object})
@@ -690,7 +827,7 @@ router.get('/resources/query/:id', auth, async (req, res) => {
             if(!account.remoteStateReadyEnabled){
                 return res.status(500).send({message:'Bad state, Repair'})
             }
-            const state = await Resources.find({
+            const state = await Resource.find({
                 author: account.remoteStateDeploymentId
             })
             if(!state){
@@ -706,8 +843,9 @@ router.get('/resources/query/:id', auth, async (req, res) => {
             // console.log(result)
             return res.status(200).send(result)
         }
-        res.status(200).send({deployment, resources, tagging})
+        res.status(200).send({deployment, resources, tagging, settings})
     } catch (e) {
+        // logger.log('error', `${(e.message)}`)
         res.status(500).send(e)
     }
 })
@@ -724,13 +862,14 @@ router.get('/resources/status/:id', auth, async (req, res) => {
         }
         res.status(200).send(deployment)
     } catch (e) {
+        // logger.log('error', `${(e.message)}`)
         res.status(500).send(e)
     }
 })
 
 router.delete('/resources/delete/:id', auth, async (req, res) => {
     try {
-        const resource = await Resources.deleteOne({
+        const resource = await Resource.deleteOne({
             _id: req.params.id
         })
         // const deployment = await Deployments.find({
