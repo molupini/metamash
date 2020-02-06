@@ -15,11 +15,13 @@ const nameSchema = new mongoose.Schema({
     },
     fullName: {
         type: String,
+        trim: true,
         minlength: 3,
-        maxlength: 128,
-        default: 'null',
+        maxlength: 256,
+        required: true,
         // uppercase: true, 
-        unique: true
+        unique: true,
+        index: true
     }
 }, {
     timestamps: true

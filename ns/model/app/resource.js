@@ -5,12 +5,14 @@ const resourcesSchema = new mongoose.Schema({
     author: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
-        default: null
+        default: null, 
+        ref: 'Deployment'
     },
     owner: {
         type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        default: null
+        required: false, 
+        ref: 'Connector'
+        // default: null
     },
     // TODO MAKE RESOURCE TYPE ARRAY FOR MAIN CONFIGURATION 
     resourceType: {

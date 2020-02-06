@@ -39,22 +39,40 @@ const labelSchema = new mongoose.Schema({
         trim: true,
         default: '000000'
     }, 
+    // MAX COUNT, 0 DROP NUMERATOR, OTHERWISE CONTINUE TO VALUE
     maxCount:{
-        type: Boolean, 
-        default: true, 
+        type: Number, 
+        default: 999999
     },
+    keepNumerator:{
+        type: Boolean, 
+        default: true
+    },
+    // CASE CONVERT
     isUpperCase:{
         type: Boolean,
         default: false
     }, 
+    // REQUIRED TAG, ABOVE SVC CONF
     mandatoryTagKeys: {
         type: Array,
         default: []
     },
+    // REQUIRED CONFIG
     mandatoryConfigKeys: {
         type: Array,
         default: []
-    }
+    },
+    // STAND ALONE WITHIN A DEPLOYMENT / CART
+    standAlone: {
+        type: Boolean,
+        default: false
+    },
+    // maxCount WILL ACCOMPLISH SAME RESULT
+    // onePerAccount: {
+    //     type: Boolean,
+    //     default: false
+    // }
     // TODO EVAL THE NEED TO HAVE A isUpper FIELD
 }, {
     // timestamps: true
@@ -101,7 +119,7 @@ labelSchema.statics.seedArray = async function (arr = []) {
 labelSchema.pre('save', async function(next) {
     const label = this
    
-    // SAVE LABEL VERIFY RESOURC
+    // SAVE LABEL VERIFY RESOURCE
     try {
         // debugging
         // console.log(label) 

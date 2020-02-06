@@ -3,18 +3,20 @@ const validator = require('validator')
 // const Resources = require('../context/resources')
 
 // TODO USE DEFAULTS AS FAR AS POSSIBLE 
-const resourceSettingsSchema = new mongoose.Schema({
+const configSchema = new mongoose.Schema({
     // RESOURCE ID
     author: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
-        default: null
+        default: null, 
+        ref: 'Deployment'
     },
     // DEPLOYMENT ID
     owner: {
         type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        default: null
+        required: false, 
+        ref: 'Resource'
+        // default: null
     },
     // GENERAL 
     resourceType:{
@@ -163,11 +165,11 @@ const resourceSettingsSchema = new mongoose.Schema({
     // timestamps: true
 })
 
-resourceSettingsSchema.methods.toJSON = function(){
-    const resourceSettings = this.toObject()
-    return resourceSettings
+configSchema.methods.toJSON = function(){
+    const config = this.toObject()
+    return config
 }
 
-const ResourceSettings = mongoose.model('ResourceSettings', resourceSettingsSchema)
+const Config = mongoose.model('Config', configSchema)
 
-module.exports = ResourceSettings
+module.exports = Config

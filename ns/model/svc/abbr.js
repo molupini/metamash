@@ -56,6 +56,9 @@ abbrSchema.methods.toJSON = function(){
 
 abbrSchema.statics.seedArray = async function (obj = []) {
     try {
+        // SEED ARRAY WITHIN OTHER DOCUMENTS REMOVES ALL, CAN UNCOMMENT BELOW IF NOT TO KEEP CONSISTENT 
+        await Abbr.deleteMany({})
+
         for (i = 0; i < obj.length; i++){
             const abbr = await Abbr.findOne({
                 elementLabel: obj[i].elementLabel

@@ -1,8 +1,6 @@
-# Name Service
+# META MASH
 
-[![Build Status](https://travis-ci.org/joemccann/dillinger.svg?branch=master)](https://travis-ci.org/)
-
-Is a Infrastructure as Code Naming Service.
+Is a Infrastructure as Code Tagging and Configuration Service.
 Powered by Nodejs and Mongodb.
 
   - Deploy with docker-compose 
@@ -147,7 +145,7 @@ MIT
 
    [mo]: <https://github.com/molupini>
    [linkIn]: <https://za.linkedin.com/in/mauriziolupini>
-   [git-repo-url]: <https://gitlab.com/bcx-sanlam-group/nameservice.git>
+   [git-repo-url]: <https://github.com/molupini/metamash.git>
    [node.js]: <http://nodejs.org>
    [express]: <http://expressjs.com>
    [mongodb]: <https://www.mongodb.com/>

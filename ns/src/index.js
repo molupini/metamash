@@ -9,13 +9,13 @@ const svcRouter = require('../router/svc')
 // CONTEXT
 const contextRouter = require('../router/context')
 // APP COMING SOON 
-// const appRouter = require('../router/app')
+const appRouter = require('../router/app')
 
 app.use(express.json())
 app.use(contextRouter)
 app.use(svcRouter)
-// COMING SOON 
-// app.use(appRouter)
+// IN PROGRESS
+app.use(appRouter)
 
 app.use('/healthv', (req, res) => {
     res.status(200).send('healthy')

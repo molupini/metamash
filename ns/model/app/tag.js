@@ -1,12 +1,18 @@
 const mongoose = require('mongoose')
 // const VirtualMachine = require('../model/vm')
 
-const taggingSchema = new mongoose.Schema({
+const tagSchema = new mongoose.Schema({
     author: {
         type: mongoose.Schema.Types.ObjectId,
         // required: true,
         default: null, 
-        ref: 'author'
+        ref: 'Deployment'
+    },
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        // required: true,
+        default: null, 
+        ref: 'Resource'
     },
     // owner: {
     //     type: mongoose.Schema.Types.ObjectId,
@@ -14,28 +20,28 @@ const taggingSchema = new mongoose.Schema({
     //     default: null, 
     //     ref: 'owner'
     // },
-    entries: {
+    entry: {
     }
 })
 
-taggingSchema.methods.toJSON = function(){
-    const tagging = this.toObject()
-    return tagging
+tagSchema.methods.toJSON = function(){
+    const tag = this.toObject()
+    return tag
 }
 
-taggingSchema.pre('save', async function (next){
+tagSchema.pre('save', async function (next){
     try {
-        const tagging = this
+        const tag = this
         const object = {}
-        if(tagging.isNew){
-            const key = Object.keys(tagging.entries)
+        if(tag.isNew){
+            const key = Object.keys(tag.entry)
             for(let i = 0; i < key.length; i++){
-                const value = tagging.entries[key[i]]
+                const value = tag.entry[key[i]]
                 if(value){
                     object[key[i]] = value
                 }
             }
-            tagging.entries = object
+            tag.entry = object
         }
     } catch (e) {
         console.error(e)
@@ -43,6 +49,6 @@ taggingSchema.pre('save', async function (next){
     next()
 })
 
-const Tagging = mongoose.model('Tagging', taggingSchema)
+const Tag = mongoose.model('Tag', tagSchema)
 
-module.exports = Tagging
+module.exports = Tag
