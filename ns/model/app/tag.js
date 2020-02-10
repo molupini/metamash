@@ -14,12 +14,6 @@ const tagSchema = new mongoose.Schema({
         default: null, 
         ref: 'Resource'
     },
-    // owner: {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     // required: true,
-    //     default: null, 
-    //     ref: 'owner'
-    // },
     entry: {
     }
 })

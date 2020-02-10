@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 // const OrganizationalUnit = require('../context/account')
-const Tagging = require('./tag')
+const Tag = require('./tag')
 
 
 const deploymentSchema = new mongoose.Schema({
@@ -10,11 +10,6 @@ const deploymentSchema = new mongoose.Schema({
         default: null, 
         ref: 'Connector'
     },
-    // runAs: {
-    //     type: String,
-    //     trim: true,
-    //     default: null
-    // },
     stateDescription: {
         type: String,
         default: 'ready',
@@ -35,12 +30,6 @@ const deploymentSchema = new mongoose.Schema({
 }, {
     timestamps: true
 })
-
-// controlSchema.virtual('virtualMachine', {
-//     ref: 'VirtualMachine',
-//     localField: 'author',
-//     foreignField: '_id'
-// })
 
 deploymentSchema.methods.toJSON = function(){
     const deployment = this.toObject()
@@ -100,17 +89,18 @@ deploymentSchema.pre('save', async function (next) {
             break
     }
 
-    if(!deployment.isNew && deployment.isModified('stateDescription')){
-        const ou = await OrganizationalUnit.findById(deployment.author)
-        const tagging = await Tagging.findOne({
-            author: deployment.id
-        })
-        if (tagging.entry.application === 'tfsta'){
-            ou.remoteStateDeploymentId = deployment._id
-            ou.remoteStateReadyEnabled = state
-        }
-        await ou.save()
-    }
+    // // TODO, REMOVED COMPLEXITY
+    // if(!deployment.isNew && deployment.isModified('stateDescription')){
+    //     const account = await Account.findById(deployment.author)
+    //     const tag = await Tag.findOne({
+    //         author: deployment.id
+    //     })
+    //     if (tag.entry.application === 'tfsta'){
+    //         account.remoteStateDeploymentId = deployment._id
+    //         account.remoteStateReadyEnabled = state
+    //     }
+    //     await account.save()
+    // }
 
     next()
 })

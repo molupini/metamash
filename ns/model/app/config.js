@@ -167,6 +167,12 @@ const configSchema = new mongoose.Schema({
 
 configSchema.methods.toJSON = function(){
     const config = this.toObject()
+    delete config.__v
+    // REDUCE CLUTTER 
+    delete config.author
+    delete config.owner
+    delete config.resourceType
+    delete config._id
     return config
 }
 

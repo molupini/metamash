@@ -333,9 +333,36 @@ var nextName = async (name = {}) => {
     }
 }
 
+var resourceTypeArray = async (obj) => {
+    var result = {}
+    var element = null
+    
+    if (obj.length > 0){
+        for (let i = 0; i < obj.length; i++){
+            
+            if(obj[i].entry){
+                element = obj[i].entry
+            } else {
+                element = obj[i]
+            }
+
+            const rt = element['resourceType']
+            if(result[rt] !== undefined){
+                result[rt].push(element)
+            } 
+            else {
+                result[rt] = [element]
+            }
+        }
+    }
+
+    return result
+}
+
 module.exports = { 
     bodyQuery,
     objDocBuilder,
     tagBuilder,
-    logicalNameBuilder
+    logicalNameBuilder, 
+    resourceTypeArray
 }

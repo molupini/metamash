@@ -4,7 +4,7 @@ const router = new express.Router()
 // CONTEXT 
 // const Perimeters = require('../model/context/perimeter')
 // const Account = require('../model/context/account')
-// const Connector = require('../model/context/connector')
+const Connector = require('../model/context/connector')
 
 // SVC
 const Name = require('../model/svc/name')
@@ -17,7 +17,7 @@ const Tag = require('../model/app/tag')
 const Resource = require('../model/app/resource')
 
 // UTILS 
-const { bodyQuery, objDocBuilder, tagBuilder, logicalNameBuilder } = require('../src/util/name')
+const { bodyQuery, objDocBuilder, tagBuilder, logicalNameBuilder, resourceTypeArray } = require('../src/util/name')
 const auth = require('../middleware/auth')
 
 
@@ -50,14 +50,14 @@ router.post('/app', auth, async (req, res) => {
         // USED TO COMBINE QUERY AND THE BODY AND RETURN A SINGLE OBJECT 
         object = bodyQuery(req.body, req.query)
         // debugging
-        console.log('bodyQuery object =')
-        console.log(object)
+        // console.log('bodyQuery object =')
+        // console.log(object)
 
         // USED TO COMBINE OBJECT AND FOUND "MONGO" DOCUMENTS "WITH MANDATORY MODELS" AND RETURN A SINGLE OBJECT 
         object = await objDocBuilder(object)
         // debugging
-        console.log('objDocBuilder object =')
-        console.log(object)
+        // console.log('objDocBuilder object =')
+        // console.log(object)
 
         // ERROR IN CALLING FUNCTION
         if(object.name){
@@ -72,8 +72,8 @@ router.post('/app', auth, async (req, res) => {
             return res.status(404).send({message: builder.message})
         }
         // debugging
-        console.log('tagBuilder object =')
-        console.log(builder)
+        // console.log('tagBuilder object =')
+        // console.log(builder)
 
         // COMPARE OBJECT WITH LABEL AND RETURN SCHEMA
         // RETURN LOGICAL NAME 
@@ -83,8 +83,8 @@ router.post('/app', auth, async (req, res) => {
             return res.status(404).send({message: logicalName.message})
         }
         // debugging
-        console.log('logicalNameBuilder logicalName =')
-        console.log(logicalName)
+        // console.log('logicalNameBuilder logicalName =')
+        // console.log(logicalName)
 
         if(!object.cart){
             deployment = new Deployment({
@@ -115,12 +115,12 @@ router.post('/app', auth, async (req, res) => {
         await name.save()
 
         // SEED CONFIG
-        if (builder.configuration !== undefined){
+        if (builder.config !== undefined){
             config = await new Config({
                 author :  object.deploymentId,
                 owner : resource._id,
                 resourceType : resource.resourceType,
-                ...builder.configuration
+                ...builder.config
             })
             await config.save()
         }
@@ -128,6 +128,9 @@ router.post('/app', auth, async (req, res) => {
         // SEED TAG
         builder.tag['resourceId'] = resource._id
         builder.tag['Name'] = resource.logicalName
+        if(!builder.tag.deploymentId) {
+            builder.tag['deploymentId'] = object.deploymentId
+        }
         tag = await new Tag({
             author :  object.deploymentId,
             owner : resource._id,
@@ -143,186 +146,8 @@ router.post('/app', auth, async (req, res) => {
     }
 })
 
-// router.post('/resources/create', auth, async (req, res) => {
-//     try {
-//         // // USED TO COMBINE QUERY AND THE BODY AND RETURN A SINGLE OBJECT 
-//         var object = bodyQuery(req.body, req.query)
-//         // debugging
-//         console.log('bodyQuery object =')
-//         console.log(object)
-
-//         // // USED TO COMBINE OBJECT AND FOUND "MONGO" DOCUMENTS "WITH MANDATORY MODELS" AND RETURN A SINGLE OBJECT 
-//         object = await objDocBuilder(object)
-//         // console.log('objDocBuilder object =')
-//         // console.log(object)
-
-//         // ERROR IN CALLING FUNCTION
-//         if(object.name){
-//             return res.status(404).send({message: object.message})
-//         }
-
-//         // // TAG BUILDER WILL COMPARE CURRENT OBJECT AND RETURN TAG AND CONFIG FOR THIS RESOURCE
-//         // // RESOURCE ELEMENT AND CONFIG ELEMENT VERIFICATION "IF ANY MISSING ELEMENTS" PERFORMED
-//         // // IF THE ELEMENT IS REQUIRED IN BOTH TAG AND CONFIGURATION IT MUST BE DECLARED IN BOTH, SEE LABEL
-//         // // TODO NEED TO CONFIRM THAT IF STRING FOR TAG IS NOT DEFINED IN abbr THAT A ERROR IS THROWN
-//         // // > RATHER PERFORM ABOVE WHEN SEEDING, INSERTING abbrS 
-//         var builder = await tagBuilder(object)
-//         // ERROR IN CALLING FUNCTION
-//         if(builder.name){
-//             // throw new Error(builder.message)
-//             return res.status(404).send({message: builder.message})
-//         }
-//         // debugging
-//         // console.log('tagBuilder object =')
-//         // console.log(builder)
-
-//         // // COMPARE OBJECT WITH LABEL AND RETURN SCHEMA
-//         // // RETURN LOGICAL NAME 
-//         // // TODO FIX ERROR HANDLING LIKE ABOVE TAG BUILDER
-//         logicalName = await logicalNameBuilder(builder.tag)
-//         if(logicalName.name){
-//             return res.status(404).send({message: logicalName.message})
-//         }
-//         // debugging
-//         // console.log('logicalNameBuilder logicalName =')
-//         // console.log(logicalName)
-
-//         if(!object.cart){
-//             deployment = new Deployment({
-//                 author: object.accountId,
-//                 state: object.nameOnly === true ? 13 : 0
-//             })
-//             object.deploymentId = deployment._id
-//             builder.tag.deploymentId = object.deploymentId
-//             await deployment.save()
-//         }
-
-
-//         // TODO DEPRECATE COUNT AS WILL NOT BE NECESSARY WITH ASG
-//         // IF CALLER/USER WANTS MORE ITEMS WILL NEED TO ITERATE
-//         // COMMENT BLOCK BELOW IS IN REVIEW, SEE # FOR CURRENT SOLUTION
-
-//         // #
-//         // // SEED RESOURCE
-//         resource = await new Resource({
-//             author: object.deploymentId,
-//             owner: object.accountId,
-//             resourceType: builder.tag.resourceType,
-//             logicalName: logicalName,
-//             userDefined: true
-//         })
-//         await resource.save()
-
-//         // // SEED NAME
-//         const name = await new Name({
-//             author: resource._id, 
-//             fullName: logicalName
-//         })
-//         await name.save()
-//         // #
-
-//         /*
-//         // COUNT PARAMETER GREATER THEN 1
-//         const numerator = builder.configuration.count
-//         var resource = null
-//         var ln = []
-
-//         if(numerator > 1){
-            
-//             var num = 0
-//             var iteration = 0
-//             var re = null
-//             for (let i = 0; i < numerator; i++){
-//                 // console.log('i =', i)
-//                 re = new RegExp(/\d{1,10}$/)
-//                 const mesh = logicalName.match(re)
-//                 iteration = parseInt(mesh[0])
-//                 iteration+=num
-//                 // console.log('count iteration =', iteration)
-//                 const len = iteration.toString().split('').length
-//                 var string = `\\d{1,${len}}$`
-//                 re = new RegExp(string)
-
-//                 // // SEED RESOURCE
-//                 builder.configuration.count = 1
-//                 resource = await new Resource({
-//                     author: object.deploymentId,
-//                     owner: object.accountId,
-//                     resourceType: builder.tag.resourceType,
-//                     logicalName: logicalName.replace(re, iteration),
-//                     userDefined: true
-//                 })
-//                 await resource.save()
-
-//                 // // SEED NAME
-//                 const name = await new Name({
-//                     author: resource._id, 
-//                     fullName: logicalName.replace(re, iteration)
-//                 })
-//                 await name.save()
-//                 ln.push(name.fullName)
-//                 num++
-//             }
-            
-//         }else{
-//             // // SEED RESOURCE
-//             resource = await new Resource({
-//                 author: object.deploymentId,
-//                 owner: object.accountId,
-//                 resourceType: builder.tag.resourceType,
-//                 logicalName: logicalName,
-//                 userDefined: true
-//             })
-//             await resource.save()
-
-//             // // SEED NAME
-//             const name = await new Name({
-//                 author: resource._id, 
-//                 fullName: logicalName
-//             })
-//             await name.save()
-//             ln.push(name.fullName)
-//         }
-//         // console.log(ln)
-//         */
-        
-//         // // SEED RESOURCE SETTINGS
-//         if (builder.configuration){
-//             const config = await new Config({
-//                 author : resource._id,
-//                 owner : object.deploymentId,
-//                 resourceType : resource.resourceType,
-//                 ...builder.configuration
-//             })
-            
-//             await config.save()
-//         }
-
-//         // // SEED TAGS 
-//         // // USING EXISTING DEPLOYMENT/CART FOR RESOURCE TO GROUP RESOURCES
-//         var tag = null
-//         if(object.cart){
-//             tag = await Tag.find({
-//                 author: object.deploymentId
-//             })
-//         }else{
-//             tag = await new Tag({
-//                 author: object.deploymentId,
-//                 entries: builder.tag
-//             })
-//             // // SAVE COMMON DOCUMENTS 
-//             await tag.save()
-//         }
-
-//         res.status(201).send({deploymentId:object.deploymentId})
-//     } catch (e) {
-//         // logger.log('error', `${(e.message)}`)
-//         res.status(500).send(e)
-//     }
-// })
-
 // // TODO EVAL IF SINGLE CREATE REQUIRED AS MULTI WILL CARTER FOR BOTH REQUESTS
-// router.post('/resources/create/multiple', auth, async (req, res) => {
+// router.post('/resource/create/multiple', auth, async (req, res) => {
 //     try {
 //         // // USED TO COMBINE QUERY AND THE BODY AND RETURN A SINGLE OBJECT
 //         // IF COUNT, SET 1 AS RESOURCE TYPE WILL SET THE COUNT PARAMETER
@@ -415,12 +240,12 @@ router.post('/app', auth, async (req, res) => {
 //             // console.log(name)
             
 //             // // SEED RESOURCE SETTINGS
-//             if (builder.configuration){
+//             if (builder.config){
 //                 const config = await new Config({
 //                     author : resource._id,
 //                     owner : object.deploymentId,
 //                     resourceType : resource.resourceType,
-//                     ...builder.configuration
+//                     ...builder.config
 //                 })
 //                 await config.save()
 //             }
@@ -451,7 +276,7 @@ router.post('/app', auth, async (req, res) => {
 //     }
 // })
 
-// router.get('/resources/Deployment', auth, async (req, res) => {
+// router.get('/resource/Deployment', auth, async (req, res) => {
 //     try {
 //         var Options = {}
 //         Options.limit = parseInt(req.query.limit) >= 50 ? parseInt(req.query.limit) : 50
@@ -465,7 +290,7 @@ router.post('/app', auth, async (req, res) => {
 // })
 
 // // TODO JUST EVAL/TESTING IF NECESSARY AS HANDLED IN MAIN CONNECTOR MODEL
-// router.get('/resources/discovery/:id', async (req, res) => {
+// router.get('/resource/discovery/:id', async (req, res) => {
 //     try {
 //         const connector = await MainConnector.findById(req.params.id)
 //         if(!connector){
@@ -482,7 +307,7 @@ router.post('/app', auth, async (req, res) => {
 // })
 
 // // USED BY SERVICE TO UPDATE LOGICAL ID'S 
-// router.patch('/resources/update/:id', auth, async (req, res) => {
+// router.patch('/resource/update/:id', auth, async (req, res) => {
 //     const exclude = ['author', 'owner', '_id']
 //     // console.log('req.body =')
 //     // console.log(req.body)
@@ -511,7 +336,7 @@ router.post('/app', auth, async (req, res) => {
 // })
 
 // // USED BY SERVICE TO UPDATE LOGICAL ID'S 
-// router.patch('/resources/updateSetting/:id', auth, async (req, res) => {
+// router.patch('/resource/updateSetting/:id', auth, async (req, res) => {
 //     try {
 //         var resource = await Resource.findById(req.params.id)
 //         if (!resource) {
@@ -538,7 +363,7 @@ router.post('/app', auth, async (req, res) => {
 //     }
 // })
 
-// router.post('/resources/add/rule/:id', auth, async (req, res) => {
+// router.post('/resource/add/rule/:id', auth, async (req, res) => {
 //     try {
 //         // TODO NEED TO PROVIDE A ENDPOINT TO DELETE RULES 
 //         // await SecurityRules.deleteMany({
@@ -582,14 +407,14 @@ router.post('/app', auth, async (req, res) => {
 //         //     owner: req.params.id,
 //         //     ...req.body
 //         // })
-//         const settings = await Config.find({
+//         const config = await Config.find({
 //             owner: req.params.id,
 //             ...req.body
 //         })
 //         // debugging
-//         // console.log('settings =')
-//         // console.log(settings)
-//         if(settings.length !== 0){
+//         // console.log('config =')
+//         // console.log(config)
+//         if(config.length !== 0){
 //             return res.status(404).send({message:'Rule Found'})
 //         }
 //         if(group.length >= 1){
@@ -614,7 +439,294 @@ router.post('/app', auth, async (req, res) => {
 //     }
 // })
 
-// router.get('/resources/query/:id', auth, async (req, res) => {
+router.get('/app/:id', auth, async (req, res) => {
+    try {
+        var object = {}
+
+        // REQUIRED DOCUMENTS 
+        const deployment = await Deployment.findById(req.params.id)
+        if(!deployment){
+            return res.status(404).send({message:'Deployment not found'})
+        }
+        const tag = await Tag.find({
+            author: deployment._id
+        })
+        var resource = await Resource.find({
+            author: deployment._id
+        })
+        const connector = await Connector.findOne({
+            _id: deployment.owner
+        })
+        const config = await Config.find({
+            author: deployment._id
+        })
+        if(!resource){
+            return res.status(404).send({message:'Resource not found'})
+        }
+
+        // SPECIFIC QUERY 
+        // DOCUMENT RESOURCE DISTINCT LIST 
+        if(req.query.document === 'distinct'){
+            const distinct = await Resource.find({
+                author: deployment._id
+            }).distinct('resourceType')
+            return res.status(200).send(distinct)
+        }
+
+        // DOCUMENT CONNECTOR
+        if(req.query.document === 'connector'){
+            return res.status(200).send(connector)
+        }
+
+        // DOCUMENT TAG, CONFIG, RESOURCE 
+        if(req.query.document.match(/tag|config|resource/)){
+            const doc = req.query.document === 'tag' ? tag 
+                :  req.query.document === 'config' ? config
+                : req.query.document === 'resource' ? resource 
+                : {}
+            object = await resourceTypeArray(doc)
+            return res.status(200).send(object)
+        }
+
+        // DOCUMENT DEPLOYMENT
+        if(req.query.document === 'deployment'){
+            return res.status(200).send(deployment)
+        }
+
+        // DOCUMENT SECURITY 
+        // if(req.query.document === 'security'){
+        //     var ruleObject = {}
+        //     var resourceObject = {}
+        //     if (resource.length > 0){
+        //         resource = resource.filter((x) => {
+        //             // console.log(x.resourceType === 'SGRP')
+        //             return x.resourceType === 'SGRP'
+        //         })
+        //         // debugging
+        //         // console.log('resource =')
+        //         // console.log(resource)
+        //         // console.log('count =', resource.length)
+        //         // console.log()
+        //         for (let i = 0; i < resource.length; i++){
+        //             // const rule = await SecurityRules.find({
+        //             //     author: resource[i].id
+        //             // })
+        //             // debugging
+
+        //             var rule = await Config.find({
+        //                 author: resource[i].id
+        //             })
+        //             // console.log(`rule for, ${resource[i].id} = `)
+        //             // console.log(rule)
+        //             // console.log('count =', rule.length)
+        //             // console.log()
+        //             if (rule.length > 0){
+        //                 for (let x = 0; x < rule.length; x++){
+        //                     // SECURITY GROUP RESOURCE
+        //                     var resource = {
+        //                         logicalName: resource[i]['logicalName'],
+        //                         resourceType: resource[i]['resourceType'],
+        //                         logicalId: resource[i]['logicalId'],
+        //                         resourceId: resource[i]['_id']
+        //                     }
+
+        //                     const rkey = rule[x]['forResource']
+        //                     if(resourceObject[rkey] === undefined){
+        //                         resourceObject[rkey] = resource
+        //                     }
+        //                     // RULES
+        //                     var secure = {
+        //                         port: rule[x]['port'], 
+        //                         source: rule[x]['source'],
+        //                         direction: rule[x]['direction'],
+        //                         forResource: rule[x]['forResource'], 
+        //                         toResource: rule[x]['toResource']
+        //                     }
+        //                     const skey = rule[x]['forResource']
+        //                     if(ruleObject[skey] === undefined){
+        //                         ruleObject[skey] = [secure]
+        //                     }
+        //                     else {
+        //                         ruleObject[skey].push(secure)
+        //                     }
+        //                     // debugging
+        //                     // console.log('resource =')
+        //                     // console.log(resource)
+        //                     // console.log('secure =')
+        //                     // console.log(secure)
+        //                 }
+        //             }
+        //         }
+        //     }
+        //     // TODO TESTING WITH SECURITY GROUP SPECIFIC SOURCE BASED ON TO RESOURCE
+        //     // console.log('resourceObject =')
+        //     // console.log(resourceObject)
+        //     return res.status(200).send({
+        //         resource: resourceObject,
+        //         rules: ruleObject
+        //     })
+        // }
+
+        // // DISCOVERY IS USED FOR FINDING RESOURCES THAT ARE DEPLOYED POST, API AND NOT USER DEFINED
+        // if(req.query.document === 'discovery'){
+        //     const discovery = await Resource.find({
+        //         owner: account.owner,
+        //         author: account.owner,
+        //         userDefined: false
+        //     })
+        //     // debugging
+        //     // console.log('discovery =')
+        //     // console.log(discovery)
+        //     if (discovery.length > 0){
+        //         for (let i = 0; i < discovery.length; i++){
+        //             var inner = {}
+        //             var found = false
+        //             const key = discovery[i]['resourceType']
+        //             inner['logicalName'] = discovery[i]['logicalName']
+        //             inner['logicalId'] = discovery[i]['logicalId']
+        //             inner['resourceType'] = discovery[i]['resourceType']
+        //             inner['resourceId'] = discovery[i]['_id']
+        //             // debugging
+        //             // console.log('inner =')
+        //             // console.log(inner)
+        //             const setting = await Config.findOne({
+        //                 author: inner['resourceId']
+        //             })
+        //             // debugging
+        //             // console.log('setting =')
+        //             // console.log(setting)
+        //             // TODO, TEMP WILL REMOVE CONDITIONAL ONCE ALL NEW RESOURCES HAVE CREATED SETTINGS AT THE MOMENT NULL BELOW 
+        //             // TODO, COPY RESOURCE DOCUMENT USE OF RESOURCE SETTINGS 
+        //             var clone = {}
+        //             if(setting){
+        //                 clone = setting.toObject()
+        //                 delete clone._id
+        //                 delete clone.author
+        //                 delete clone.owner
+        //                 delete clone.__v
+        //             } 
+        //             // TODO EVAL THE BELOW MATCH MIGHT BE TO SPECIFIC
+        //             const re = new RegExp(account.account, 'i')
+        //             found = inner['logicalName'].match(re)
+        //             if(found){
+        //                 inner['accountMatch'] = 'true'
+        //             } else {
+        //                 inner['accountMatch'] = 'false'
+        //             }
+        //             if (Object.keys(clone).length > 0){
+        //                 Object.keys(clone).forEach((x) => {
+        //                     inner[x] = clone[x]
+        //                 })
+        //             }
+        //             object[key] = inner
+        //         }
+        //     }
+        //     return res.status(200).send({resource: object})
+        // }
+
+        // // PARENT RESOURCES, WILL FIND RESOURCES THAT ARE CREATED FOR THIS SPECIFIC "OWNER =" ACCOUNT 
+        // if(req.query.document === 'parent'){
+        //     var parent = await Resource.find({
+        //         owner: account._id,
+        //         userDefined: true
+        //     })
+        //     // debugging
+        //     // console.log('parent =')
+        //     // console.log(parent)
+        //     parent = parent.filter ((x) => {
+        //         return x.logicalId !== 'NULL'
+        //     })
+        //     if (parent.length > 0){
+        //         for (let i = 0; i < parent.length; i++){
+        //             var inner = {}
+        //             var found = false
+        //             const key = parent[i]['resourceType']
+        //             // const label = await Label.findOne({
+        //             //     resourceType: key
+        //             // })
+        //             // const accountCase = label.isUpperCase ? account.account.toUpperCase() : account.account.toLowerCase()
+        //             // console.log('accountCase =')
+        // }
+        //             // console.log(accountCase)
+        //             inner['logicalName'] = parent[i]['logicalName']
+        //             inner['logicalId'] = parent[i]['logicalId']
+        //             inner['resourceType'] = parent[i]['resourceType']
+        //             inner['resourceId'] = parent[i]['id']
+
+        //             const setting = await Config.findOne({
+        //                 author: inner['resourceId']
+        //             })
+        //             // TODO, TEMP WILL REMOVE CONDITIONAL ONCE ALL NEW RESOURCES HAVE CREATED SETTINGS AT THE MOMENT NULL BELOW 
+        //             // TODO, COPY RESOURCE DOCUMENT USE OF RESOURCE SETTINGS 
+        //             var clone = {}
+        //             if(setting){
+        //                 clone = setting.toObject()
+        //                 delete clone._id
+        //                 delete clone.author
+        //                 delete clone.owner
+        //                 delete clone.__v
+        //             } 
+        //             // TODO EVAL THE BELOW MATCH MIGHT BE TO SPECIFIC 
+        //             // found = inner['logicalName'].match(accountCase)
+        //             const re = new RegExp(account.account, 'i')
+        //             found = inner['logicalName'].match(re)
+        //             if (found && Object.keys(clone).length > 0){
+        //                 Object.keys(clone).forEach((x) => {
+        //                     inner[x] = clone[x]
+        //                 })
+        //                 object[key] = inner
+        //             }
+        //         }
+        //     }
+        //     return res.status(200).send({resource: object})
+        // }
+
+        // if(req.query.document === 'account'){
+        //     return res.status(200).send({account: account})
+        // }
+
+        // if(req.query.document === 'perimeter'){
+        //     const perimeter = await Perimeters.findOne({
+        //         author: connector.id
+        //     })
+        //     if(!perimeter){
+        //         return res.status(404).send({message:'Perimeters not found'})
+        //     }
+        //     object['public'] = perimeter['perimeterLabel']
+        //     object['private'] = perimeter['backOfficeLabel']
+        //     object['internet'] = perimeter['breakoutLabel']
+        //     object['default'] = '*'
+        //     return res.status(200).send({perimeter: object})
+        // }
+
+        // if(req.query.document === 'state'){
+        //     if(!account.remoteStateReadyEnabled){
+        //         return res.status(500).send({message:'Bad state, Repair'})
+        //     }
+        //     const state = await Resource.find({
+        //         author: account.remoteStateDeploymentId
+        //     })
+        //     if(!state){
+        //         return res.status(404).send({message:'State not found'})
+        //     }
+        //     var result = {}
+        //     state.filter ((x) => {
+        //         // console.log(x)
+        //         if (x.resourceType === 'DYN' || x.resourceType === 'S3') {
+        //             result[x.resourceType] = x.logicalName
+        //         }
+        //     })
+        //     // console.log(result)
+        //     return res.status(200).send(result)
+        // }
+        res.status(200).send({deployment, resource, tag, config})
+    } catch (e) {
+        console.error(e)
+        res.status(500).send(e)
+    }
+})
+
+// router.get('/app/:id', auth, async (req, res) => {
 //     try {
 //         var object = {}
 //         var resourceType = null
@@ -623,26 +735,22 @@ router.post('/app', auth, async (req, res) => {
 //         if(!deployment){
 //             return res.status(404).send({message:'Deployment not found'})
 //         }
-//         const account = await Account.findById(deployment.author)
-//         if(!account){
-//             return res.status(404).send({message:'Account not found'})
-//         }
-//         const tag = await Tag.findOne({
+//         const tag = await Tag.find({
 //             author: deployment._id
 //         })
-//         var resources = await Resource.find({
+//         var resource = await Resource.find({
 //             author: deployment._id
 //         })
 //         const connector = await MainConnector.findOne({
-//             _id: account.owner
+//             _id: deployment.owner
 //         })
-//         const settings = await Config.find({
-//             owner: deployment._id
+//         const config = await Config.find({
+//             author: deployment._id
 //         })
-//         if(!resources){
+//         if(!resource){
 //             return res.status(404).send({message:'Resource not found'})
 //         }
-//         if(resources.length > 1){
+//         if(resource.length > 1){
 //             resourceType = await Resource.find({
 //                 author: deployment._id
 //             }).distinct('resourceType')
@@ -651,22 +759,22 @@ router.post('/app', auth, async (req, res) => {
 //                 await tag.save()
 //             }        
 //         }
-//         if(req.query.document === 'resources'){
-//             if (resources.length > 0){
-//                 for (let i = 0; i < resources.length; i++){
-//                     if (resources[i]['resourceType'] !== 'SGRP'){
-//                         // console.log(resources[i])
+//         if(req.query.document === 'resource'){
+//             if (resource.length > 0){
+//                 for (let i = 0; i < resource.length; i++){
+//                     if (resource[i]['resourceType'] !== 'SGRP'){
+//                         // console.log(resource[i])
 //                         var inner = {}
-//                         const key = resources[i]['resourceType']
+//                         const key = resource[i]['resourceType']
 //                         // // debugging
 //                         // console.log('key =')
 //                         // console.log(key)
-//                         inner['logicalName'] = resources[i]['logicalName']
-//                         inner['resourceId'] = resources[i]['id']
-//                         if (resources[i]['logicalId'] !== 'NULL'){
-//                             inner['logicalId'] = resources[i]['logicalId']
+//                         inner['logicalName'] = resource[i]['logicalName']
+//                         inner['resourceId'] = resource[i]['id']
+//                         if (resource[i]['logicalId'] !== 'NULL'){
+//                             inner['logicalId'] = resource[i]['logicalId']
 //                         }
-//                         inner['resourceType'] = resources[i]['resourceType']
+//                         inner['resourceType'] = resource[i]['resourceType']
 //                         // JOIN SETTING AND RESOURCE 
 //                         const setting = await Config.findOne({
 //                             author: inner['resourceId'] 
@@ -686,22 +794,22 @@ router.post('/app', auth, async (req, res) => {
 //                     }
 //                 }
 //             }
-//             return res.status(200).send({resources: object})
+//             return res.status(200).send({resource: object})
 //         }
 //         if(req.query.document === 'resourceArray'){
-//             // console.log(resources)
-//             if (resources.length > 0){
-//                 for (let i = 0; i < resources.length; i++){
-//                     if (resources[i]['resourceType'] !== 'SGRP'){
-//                         // console.log(resources[i])
+//             // console.log(resource)
+//             if (resource.length > 0){
+//                 for (let i = 0; i < resource.length; i++){
+//                     if (resource[i]['resourceType'] !== 'SGRP'){
+//                         // console.log(resource[i])
 //                         var inner = {}
-//                         const key = resources[i]['resourceType']
-//                         inner['logicalName'] = resources[i]['logicalName']
-//                         inner['resourceId'] = resources[i]['id']
-//                         if (resources[i]['logicalId'] !== 'NULL'){
-//                             inner['logicalId'] = resources[i]['logicalId']
+//                         const key = resource[i]['resourceType']
+//                         inner['logicalName'] = resource[i]['logicalName']
+//                         inner['resourceId'] = resource[i]['id']
+//                         if (resource[i]['logicalId'] !== 'NULL'){
+//                             inner['logicalId'] = resource[i]['logicalId']
 //                         }
-//                         inner['resourceType'] = resources[i]['resourceType']
+//                         inner['resourceType'] = resource[i]['resourceType']
 //                         // JOIN SETTING AND RESOURCE 
 //                         const setting = await Config.findOne({
 //                             author: inner['resourceId'] 
@@ -727,31 +835,31 @@ router.post('/app', auth, async (req, res) => {
 //                     }
 //                 }
 //             }
-//             return res.status(200).send({resources: object})
+//             return res.status(200).send({resource: object})
 //         }
 //         if(req.query.document === 'security'){
 //             var ruleObject = {}
 //             var resourceObject = {}
-//             if (resources.length > 0){
-//                 resources = resources.filter((x) => {
+//             if (resource.length > 0){
+//                 resource = resource.filter((x) => {
 //                     // console.log(x.resourceType === 'SGRP')
 //                     return x.resourceType === 'SGRP'
 //                 })
 //                 // debugging
-//                 // console.log('resources =')
-//                 // console.log(resources)
-//                 // console.log('count =', resources.length)
+//                 // console.log('resource =')
+//                 // console.log(resource)
+//                 // console.log('count =', resource.length)
 //                 // console.log()
-//                 for (let i = 0; i < resources.length; i++){
+//                 for (let i = 0; i < resource.length; i++){
 //                     // const rule = await SecurityRules.find({
-//                     //     author: resources[i].id
+//                     //     author: resource[i].id
 //                     // })
 //                     // debugging
 
 //                     var rule = await Config.find({
-//                         author: resources[i].id
+//                         author: resource[i].id
 //                     })
-//                     // console.log(`rule for, ${resources[i].id} = `)
+//                     // console.log(`rule for, ${resource[i].id} = `)
 //                     // console.log(rule)
 //                     // console.log('count =', rule.length)
 //                     // console.log()
@@ -759,10 +867,10 @@ router.post('/app', auth, async (req, res) => {
 //                         for (let x = 0; x < rule.length; x++){
 //                             // SECURITY GROUP RESOURCE
 //                             var resource = {
-//                                 logicalName: resources[i]['logicalName'],
-//                                 resourceType: resources[i]['resourceType'],
-//                                 logicalId: resources[i]['logicalId'],
-//                                 resourceId: resources[i]['_id']
+//                                 logicalName: resource[i]['logicalName'],
+//                                 resourceType: resource[i]['resourceType'],
+//                                 logicalId: resource[i]['logicalId'],
+//                                 resourceId: resource[i]['_id']
 //                             }
 
 //                             const rkey = rule[x]['forResource']
@@ -797,7 +905,7 @@ router.post('/app', auth, async (req, res) => {
 //             // console.log('resourceObject =')
 //             // console.log(resourceObject)
 //             return res.status(200).send({
-//                 resources: resourceObject,
+//                 resource: resourceObject,
 //                 rules: ruleObject
 //             })
 //         }
@@ -858,7 +966,7 @@ router.post('/app', auth, async (req, res) => {
 //                     object[key] = inner
 //                 }
 //             }
-//             return res.status(200).send({resources: object})
+//             return res.status(200).send({resource: object})
 //         }
 //         // PARENT RESOURCES, WILL FIND RESOURCES THAT ARE CREATED FOR THIS SPECIFIC "OWNER =" ACCOUNT 
 //         if(req.query.document === 'parent'){
@@ -913,7 +1021,7 @@ router.post('/app', auth, async (req, res) => {
 //                     }
 //                 }
 //             }
-//             return res.status(200).send({resources: object})
+//             return res.status(200).send({resource: object})
 //         }
 //         if(req.query.document === 'tagging'){
 //             return res.status(200).send({tagging: tag['entries']})
@@ -957,14 +1065,14 @@ router.post('/app', auth, async (req, res) => {
 //             // console.log(result)
 //             return res.status(200).send(result)
 //         }
-//         res.status(200).send({deployment, resources, tag, settings})
+//         res.status(200).send({deployment, resource, tag, config})
 //     } catch (e) {
 //         // logger.log('error', `${(e.message)}`)
 //         res.status(500).send(e)
 //     }
 // })
 
-// router.get('/resources/status/:id', auth, async (req, res) => {
+// router.get('/resource/status/:id', auth, async (req, res) => {
 //     try {
 //         const deployment = await Deployment.findById(req.params.id)
 //         if (!deployment){ 
@@ -981,7 +1089,7 @@ router.post('/app', auth, async (req, res) => {
 //     }
 // })
 
-// router.delete('/resources/delete/:id', auth, async (req, res) => {
+// router.delete('/resource/delete/:id', auth, async (req, res) => {
 //     try {
 //         const resource = await Resource.deleteOne({
 //             _id: req.params.id
