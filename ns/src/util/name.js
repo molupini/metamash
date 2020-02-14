@@ -9,6 +9,7 @@ const Connector = require('../../model/context/connector')
 const Relationship = require('../../model/context/relationship')
 // APP
 const Deployment = require('../../model/app/deployment')
+const Resource = require('../../model/app/resource')
 
 
 // USED TO COMBINE QUERY AND THE BODY AND RETURN A SINGLE OBJECT 
@@ -37,7 +38,7 @@ var objDocBuilder = async (object = {}) => {
         if(object.cart){
             deployment = await Deployment.findById(object.deploymentId)
             if(!deployment){
-                return new Error('Deployment not Found')
+                throw 'Deployment not Found'
             }
             object.cart = true
             object.deploymentId = deployment._id
@@ -45,17 +46,25 @@ var objDocBuilder = async (object = {}) => {
 
         // VERIFY STANDALONE LABELS WITHIN DEPLOYMENT 
         if(object.cart){
-            const label = await Label.findOne({
-                resourceType: object.resourceType
-            })
-            if(label.standAlone){
+            const label = await Label.find({
+                // resourceType: object.resourceType,
+                standAlone: true
+            }).distinct('resourceType')
+            // debugging
+            // console.log('label =')
+            // console.log(label)
+            if(label.length > 0){
                 const resource = await Resource.find({
-                    owner: object.deploymentId,
-                    resourceType: object.resourceType
+                    author: object.deploymentId
+                }).distinct('resourceType')
+                // debugging
+                // console.log('resource =')
+                // console.log(resource)
+                resource.filter((x) => {
+                    if(label.indexOf(x) !== -1){
+                        throw `StandAlone Resource ${x}`
+                    }
                 })
-                if(resource){
-                    return new Error('StandAlone Resource')
-                }
             }
         }
     
@@ -63,7 +72,7 @@ var objDocBuilder = async (object = {}) => {
         if(object.connectorId){
             connector = await Connector.findById(object.connectorId)
             if(!connector){
-                return new Error('Connector not Found')
+                throw 'Connector not Found'
             }
             object.provider = connector.provider
             object.rootOrganization = connector.rootOrganization
@@ -87,14 +96,14 @@ var tagBuilder = async (object = {}) => {
         var conf = await Conf.findOne({})
         // IF NULL THROW ERROR
         if(!conf){
-            throw ('Conf Missing')
+            throw 'Conf Missing'
         }
         // COMPARE WITH MANDATORY FLAGS WITH OBJECT CONSTRUCTED 
         conf.mandatoryTagKeys.filter((x) => {
             const found = Object.keys(object).includes(x)
             // IF MISSING RETURN ERROR
             if(!found){
-                throw (`${x} Conf Tag Missing`)
+                throw `${x} Conf Tag Missing`
             }
         })
         // GET LABEL MANDATORY FLAGS
@@ -103,14 +112,14 @@ var tagBuilder = async (object = {}) => {
         })
         // IF NULL THROW ERROR
         if(!label){
-            throw ('Label Missing')
+            throw 'Label Missing'
         }
         // COMPARE WITH OBJECT TAG
         label.mandatoryTagKeys.filter((x) => {
             const found = Object.keys(object).includes(x)
             // IF MISSING RETURN ERROR
             if(!found){
-                throw (`${x} Label Tag Missing`)
+                throw `${x} Label Tag Missing`
             }
         })
         // COMPARE WITH OBJECT CONFIG
@@ -118,7 +127,7 @@ var tagBuilder = async (object = {}) => {
             const found = Object.keys(object).includes(x)
             // IF MISSING RETURN ERROR
             if(!found){
-                throw (`${x} Label Conf Missing`)
+                throw `${x} Label Conf Missing`
             }
             if(found){
                 configuration[x] = object[x]
@@ -126,6 +135,7 @@ var tagBuilder = async (object = {}) => {
             }
         })
         // FILTER TAG FROM BOTH SOURCES, REMOVES CLUTTER, VERIFY IF ABBR IS SPECIFIED
+        // TODO ... PERFORM SAME FOR CONFIGURATION TO ENSURE CLEAN DATA
         // FILTER 
         var set = new Set(conf.mandatoryTagKeys.concat(label.mandatoryTagKeys))
         var filter = Array.from(set)
@@ -137,7 +147,7 @@ var tagBuilder = async (object = {}) => {
                 elementLabel: value
             })
             if(!abbr){
-                throw (`${value} Missing Abbr`)
+                throw `${value} Missing Abbr`
             }
             // FIND RELATIONSHIP BY CHILD
             const relationship = await Relationship.find({
@@ -166,7 +176,7 @@ var tagBuilder = async (object = {}) => {
                             match++
                             // NOT ALLOWED
                             if(!x.allow){
-                                throw (`Relationship Not Allowed ${y}`)
+                                throw `Relationship Not Allowed ${y}`
                             } 
                             // PROMOTE CHILD TO PARENT STRING VALUE IF KEY MATCH
                             if(x.promote && x.keyMatch){
@@ -174,7 +184,7 @@ var tagBuilder = async (object = {}) => {
                             }
                         } else {
                             if(x.arrayMatch){
-                                throw (`Relationship Missing ${y}`)
+                                throw `Relationship Missing ${y}`
                             }
                         }
                     })
@@ -184,12 +194,12 @@ var tagBuilder = async (object = {}) => {
                 // console.log(match)
                 // ARRAY MATCH TRUE COMPARE LENGTH OF PARENT AND MATCH COUNT
                 if(x.arrayMatch && x.parent.length !== match){
-                    throw (`Relationship Missing ${x.parent.join(', ')}`)
+                    throw `Relationship Missing ${x.parent.join(', ')}`
                 }
             })
             // MISSING KEY BETWEEN BOTH CONF AND LABEL, THROW ERROR
             if(object[key] === undefined){
-                throw (`${filter[i]} Bad Element`)
+                throw `${filter[i]} Bad Element`
             }
             result[key] = value
         }
@@ -245,7 +255,7 @@ var buildLabel = async (obj = {}) => {
             resourceType: obj.resourceType
         })
         if(!label){
-            throw ('Label not found')
+            throw 'Label not found'
         }
         // debugging
         // console.log('label =')
@@ -305,7 +315,7 @@ var nextName = async (name = {}) => {
         // console.log('count =')
         // console.log(count)
         if(count >= name.maxCount){
-            throw ('Max Count')
+            throw 'Max Count'
         }
         else if (count >= 0){
             if(name.keepNumerator){
@@ -326,7 +336,7 @@ var nextName = async (name = {}) => {
             }
             return [name.prefix, padding, count]
         }
-        throw ('Bad Name')
+        throw 'Bad Name'
     } catch (e) {
         console.error(e)
         throw new Error(e)
@@ -340,11 +350,13 @@ var resourceTypeArray = async (obj) => {
     if (obj.length > 0){
         for (let i = 0; i < obj.length; i++){
             
-            if(obj[i].entry){
-                element = obj[i].entry
-            } else {
-                element = obj[i]
-            }
+            // TODO, SEE TAG MODEL EXPLANATION
+            // if(obj[i].entry){
+            //     element = obj[i].entry
+            // } else {
+            //     element = obj[i]
+            // }
+            element = obj[i]
 
             const rt = element['resourceType']
             if(result[rt] !== undefined){

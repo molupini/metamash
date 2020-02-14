@@ -1,6 +1,4 @@
 const mongoose = require('mongoose')
-// const OrganizationalUnit = require('../context/account')
-const Tag = require('./tag')
 
 
 const deploymentSchema = new mongoose.Schema({
@@ -40,7 +38,6 @@ deploymentSchema.methods.toJSON = function(){
 
 deploymentSchema.pre('save', async function (next) {
     const deployment = this
-    var state = false
     switch (deployment.state) {
         case 0:
             deployment.stateDescription = 'ready'
@@ -89,22 +86,9 @@ deploymentSchema.pre('save', async function (next) {
             break
     }
 
-    // // TODO, REMOVED COMPLEXITY
-    // if(!deployment.isNew && deployment.isModified('stateDescription')){
-    //     const account = await Account.findById(deployment.author)
-    //     const tag = await Tag.findOne({
-    //         author: deployment.id
-    //     })
-    //     if (tag.entry.application === 'tfsta'){
-    //         account.remoteStateDeploymentId = deployment._id
-    //         account.remoteStateReadyEnabled = state
-    //     }
-    //     await account.save()
-    // }
-
     next()
 })
 
-const Deployments = mongoose.model('Deployments', deploymentSchema)
+const Deployment = mongoose.model('Deployment', deploymentSchema)
 
-module.exports = Deployments
+module.exports = Deployment

@@ -42,12 +42,6 @@ const configSchema = new mongoose.Schema({
         required: false,
         // default: "NULL"
     },
-    locations:{
-        type: String,
-        trim: true,
-        required: false,
-        // default: "NULL"
-    },
     // COMPUTE
     cpu:{
         type: Number,
@@ -66,6 +60,11 @@ const configSchema = new mongoose.Schema({
         // default: "NULL"
     },
     // DAT
+    datastore: {
+        type: String,
+        trim: true,
+        required: false
+    },
     size:{
         type: Number,
         required: false,
@@ -94,7 +93,7 @@ const configSchema = new mongoose.Schema({
             }
         }
     },
-    perimeters:{
+    perimeter:{
         type: String,
         trim: true,
         required: false,
@@ -175,6 +174,11 @@ configSchema.methods.toJSON = function(){
     delete config._id
     return config
 }
+
+// // TODO VERIFY THAT VALUE WITHIN ABBR MODEL SVC FOLDER, REMOVE TO REMOVE COMPLEXITY WITHIN UTIL NAMES
+// defaultsSchema.pre('save', async function(next) {
+//     next()
+// })
 
 const Config = mongoose.model('Config', configSchema)
 

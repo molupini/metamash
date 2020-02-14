@@ -257,9 +257,37 @@ router.post('/svc/label', auth, async (req, res) => {
     }
 })
 
+// * NOTE REMOVED PARAM FROM ENDPOINT AS QUERY STRING OFFERS MORE FUNCTION
 router.get('/svc/label', async (req, res) => {
     try {
+        // ID OR RESOURCE TYPE, WILL NOT REQUIRE OPTIONS
         var options = {}
+        var label = null
+
+        if(req.query.id){
+            label = await Label.findById(req.params.id)
+            // if (req.query.populate === 'true') {
+            //     await label.populate([
+            //         {path: 'tiers'}
+            //     ])
+            //     .execPopulate()
+            // }
+            if(!label){
+                return res.status(500).send({'error': 'Label not Found'})
+            }
+            return res.status(201).send(label)
+        }
+
+        if(req.query.resourceType){
+            label = await Label.findOne({
+                resourceType: req.query.resourceType
+            })
+            if(!label){
+                return res.status(500).send({'error': 'Label not Found'})
+            }
+            return res.status(201).send(label)
+        }
+
         if (req.query.limit){
             options.limit = parseInt(req.query.limit) > 50 ? 50 : parseInt(req.query.limit)
         }
@@ -269,7 +297,7 @@ router.get('/svc/label', async (req, res) => {
         if (parseInt(req.query.skip) > 1){
             options.skip = parseInt(req.query.skip) 
         }
-        const label = await Label.find({}, null, options)
+        label = await Label.find({}, null, options)
         res.status(200).send(label)
     } catch (e) {
         // logger.log('error', `${(e.message)}`)
@@ -277,48 +305,11 @@ router.get('/svc/label', async (req, res) => {
     }
 })
 
-router.get('/svc/label/:id', async (req, res) => {
-    try {
-
-        const label = await Label.findById(req.params.id)
-        if (req.query.populate === 'true') {
-            await label.populate([
-                {path: 'tiers'}
-            ])
-            .execPopulate()
-        }
-        res.status(201).send({label, tiers: label.tiers})
-    } catch (e) {
-        // logger.log('error', `${(e.message)}`)
-        res.status(500).send(e)
-    }
-})
-
 router.patch('/svc/label', async (req, res) => {
-    if(req.query.tier){
-        const tier = await Tiers.findOne({
-            author: req.params.id,
-            category: req.query.tier
-        })
-        if (!tier) {
-            return res.status(400).send({message:'Please provide a valid tier'})
-        }
-        const exclude = ['author', '_id', 'category']
-        const isValid = valid(req.body, Tiers.schema.obj, exclude)
-        if (!isValid) {
-            return res.status(400).send({message:'Please provide a valid input'})
-        }
-        const body = Object.keys(req.body)
-        body.forEach(value => {
-            tier[value] = req.body[value]
-        })
-        await tier.save()
-        return res.status(201).send(tier)
-    }
     const exclude = ['author', '_id']
     const isValid = valid(req.body, Label.schema.obj, exclude)
     if (!isValid) {
-        return res.status(400).send({message:'Please provide a valid input'})
+        return res.status(400).send({message:'Bad Body'})
     }
     try {
         const label = await Label.findOne({

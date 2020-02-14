@@ -1,4 +1,7 @@
 const mongoose = require('mongoose')
+// APP
+const Config = require('../app/config')
+const Tag = require('../app/tag')
 
 
 const abbrSchema = new mongoose.Schema({
@@ -43,6 +46,18 @@ const abbrSchema = new mongoose.Schema({
     systemDefined: {
         type: Boolean,
         default: false
+    },
+    useAsTag:{
+        type: Boolean,
+        default: true
+    },
+    inTagModel: {
+        type: Boolean,
+        default: false
+    },
+    inConfigModel: {
+        type: Boolean,
+        default: false
     }
 }, {
     timestamps: true
@@ -78,15 +93,45 @@ abbrSchema.statics.seedArray = async function (obj = []) {
     }
 }
 
-// abbrSchema.pre('save', async function(next){
-//     try {
-//         const abbr = this
-//     } catch (e) {
-//         console.error({'error': e})
-//         throw new Error(e)
-//     }
-//     next()
-// })
+// VERIFY THAT KEY IS IN EITHER TAG OR CONFIG MODEL WITHIN APP FOLDER
+// TODO ... will need to perform same process for label for example to verify if array has valid values 
+abbrSchema.pre('save', async function(next){
+    try {
+        const abbr = this
+
+        const tag = Object.keys(Tag.schema.obj)
+        const config = Object.keys(Config.schema.obj)
+        config.splice(config.indexOf('resourceType'), 1)
+
+        // debugging
+        // console.log('model abbr pre save =')
+        // console.log('config =')
+        // console.log(config)
+
+        // TAG
+        if(tag.indexOf(abbr.keyLabel) !== -1){
+            abbr.inTagModel = true
+        }
+        // CONFIG 
+        if(config.indexOf(abbr.keyLabel) !== -1){
+            abbr.inConfigModel = true
+        } 
+        // NEITHER FALSE, DEFAULT 
+        // WARNING TO CONSOLE IF KEY NOT PRESENT WITHIN SPECIFIC MODEL
+        if(abbr.useAsTag && !abbr.inTagModel){
+            console.warn({'warn': `element ${abbr.keyLabel} not in tag model`})
+        }
+
+        if(!abbr.useAsTag && !abbr.inConfigModel){
+            console.warn({'warn': `element ${abbr.keyLabel} not in config model`})
+        }
+
+    } catch (e) {
+        console.error(e)
+        throw {error: e}
+    }
+    next()
+})
 
 const Abbr = mongoose.model('Abbr', abbrSchema)
 
