@@ -89,6 +89,14 @@ deploymentSchema.pre('save', async function (next) {
     next()
 })
 
+deploymentSchema.pre('remove', async function(next){
+    const deployment = this
+    await Resource.deleteMany({
+        author: deployment.id
+    })
+    next()
+})
+
 const Deployment = mongoose.model('Deployment', deploymentSchema)
 
 module.exports = Deployment

@@ -1,5 +1,7 @@
 const mongoose = require('mongoose')
+const Tag = require('./tag')
 const Config = require('./config')
+const Name = require('../svc/name')
 
 const resourceSchema = new mongoose.Schema({
     author: {
@@ -64,7 +66,7 @@ resourceSchema.pre('save', async function(next) {
                     source: resource.logicalId
                 })
                 // debugging
-                console.log('update =')
+                console.log('resource, pre save, update =')
                 console.log(update)
             }
         }
@@ -75,9 +77,16 @@ resourceSchema.pre('save', async function(next) {
 
 resourceSchema.pre('remove', async function(next){
     const resource = this
+    await Tag.deleteMany({
+        owner: resource.id
+    })
     await Config.deleteMany({
         owner: resource.id
     })
+    // // TODO, RATHER CONTROL VIA GLOBAL SETTING AS CAN PROVIDE UNDESIRED RESULTS 
+    // await Name.deleteMany({
+    //     author: resource.id
+    // })
     next()
 })
 

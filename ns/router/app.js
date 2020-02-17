@@ -2,8 +2,6 @@ const express = require('express')
 const router = new express.Router()
 
 // CONTEXT 
-// const Perimeters = require('../model/context/perimeter')
-// const Account = require('../model/context/account')
 const Connector = require('../model/context/connector')
 
 // SVC
@@ -18,12 +16,15 @@ const Resource = require('../model/app/resource')
 
 // UTILS 
 const { bodyQuery, objDocBuilder, tagBuilder, logicalNameBuilder, resourceTypeArray } = require('../src/util/name')
-const { valid } = require('../src/util/compare')
+// const { valid } = require('../src/util/compare')
 const auth = require('../middleware/auth')
+const { fetch } = require('../connect/bin/aws')
 
 
-// APP
+
 /*
+APP ENDPOINT 
+
 RESOURCE, TAG, DEPLOYMENT, CONFIG
     > BODY QUERY FUNCTION WILL COMBINE BOTH, ABLE TO USE ONE OR OTHER IN-DEPENDANT
     > OBJECT DOC BUILDER WILL GET IMPORTANT DOCUMENT DATA TO AMEND TO TAGS
@@ -150,7 +151,7 @@ router.post('/app', auth, async (req, res) => {
     }
 })
 
-// APP, USED BY SERVICE 
+// USED BY SERVICE 
 router.patch('/app:id', auth, async (req, res) => {
     try {
         // RESOURCE WITHIN BODY 
@@ -175,7 +176,7 @@ router.patch('/app:id', auth, async (req, res) => {
     }
 })
 
-// APP, ALL DOCUMENTS 
+// ALL DOCUMENTS 
 router.get('/app:id', auth, async (req, res) => {
     try {
         var object = {}
@@ -331,7 +332,7 @@ router.get('/app:id', auth, async (req, res) => {
         //         for (let i = 0; i < parent.length; i++){
         //             var inner = {}
         //             var found = false
-        //             const key = parent[i]['resourceType']
+        //             5e450f955546150012480304const key = parent[i]['resourceType']
         //             // const label = await Label.findOne({
         //             //     resourceType: key
         //             // })
@@ -358,7 +359,8 @@ router.get('/app:id', auth, async (req, res) => {
         //                 delete clone.__v
         //             } 
         //             // TODO EVAL THE BELOW MATCH MIGHT BE TO SPECIFIC 
-        //             // found = inner['logicalName'].match(accountCase)
+        //        
+        // found = inner['logicalName'].match(accountCase)
         //             const re = new RegExp(account.account, 'i')
         //             found = inner['logicalName'].match(re)
         //             if (found && Object.keys(clone).length > 0){
@@ -378,7 +380,68 @@ router.get('/app:id', auth, async (req, res) => {
     }
 })
 
-// TAG, DISCOVERY 
+/*
+DEPLOYMENT ENDPOINTS 
+*/
+
+// FIND BY PARAM SET STATUS, WITH QUERY STRING
+router.get('/app/deployment:id', auth, async (req, res) => {
+    try {
+        const deployment = await Deployment.findById(req.params.id)
+        if (!deployment){ 
+            return res.status(404).send({message:'Deployment not found'})
+        }
+        if (req.query.state){
+            deployment.state = req.query.state
+            await deployment.save()
+        }
+        return res.status(200).send(deployment)
+    } catch (e) {
+        // logger.log('error', `${(e.message)}`)
+        res.status(500).send(e.message)
+    }
+})
+
+// FIND ALL, USE QUERY STRING FOR LIMIT AND SKIP 
+router.get('/app/deployment', auth, async (req, res) => {
+    try {
+        var options = {}
+        options.limit = 10
+
+        if (req.query.limit){
+            options.limit = parseInt(req.query.limit) > 50 ? 50 : parseInt(req.query.limit)
+        }
+        options.sort = {
+            'updatedAt': -1
+        }
+        const deployment = await Deployment.find({}, null, options)
+        res.status(200).send(deployment)
+    } catch (e) {
+        res.status(500).send()
+    }
+})
+
+// REMOVE 
+router.delete('/app/remove:id', auth, async (req, res) => {
+    try {
+        
+        const deployment = await Deployment.findByIdAndRemove({
+            _id: req.params.id
+        })
+        if(!deployment){
+            return res.status(404).send({message:'Deployment not Found'})
+        }
+        res.status(200).send()
+    } catch (e) {
+        res.status(500).send({error: e.message})
+    }
+})
+
+/*
+TAG ENDPOINTS 
+*/
+
+// DISCOVERY 
 // PARAM CONNECTOR
 // RESOURCE TYPE REQUIRED TO FIND LABEL AND PROVIDE NECESSARY KEYS TO FIND RESOURCE 
 // USE STATE QUERY STRING TO ENSURE STATE OF DEPLOYMENT 
@@ -387,12 +450,28 @@ router.get('/app/tag/discovery', auth, async (req, res) => {
         var label = null
         var tag = null
         var object = {}
+        var options = {}
+        var array = []
+        var deployment = null
 
         // TODO, REMOVE CONNECTOR AS NOT NECESSARY WITHIN NAME SPACE LOOKUP
         // const connector = await Connector.findById(req.params.id)
         // if(!connector){
         //     return res.status(404).send({message:'Connector not found'})
         // }
+
+        // // TODO, QUERY LIMIT AND SKIP
+        // // Excluded as will filter based on deployment state if limited will not expose all entries 
+        // if (req.query.limit){
+        //     options.limit = parseInt(req.query.limit) > 50 ? 50 : parseInt(req.query.limit)
+        // }
+        // options.sort = {
+        //     'updatedAt': -1
+        // }
+        // if (parseInt(req.query.skip) > 1){
+        //     options.skip = parseInt(req.query.skip) 
+        // }
+
         if(req.query.resourceType){
             label = await Label.findOne({
                 resourceType: req.query.resourceType
@@ -420,48 +499,44 @@ router.get('/app/tag/discovery', auth, async (req, res) => {
             // console.log('object =')
             // console.log(object)
 
-            tag = await Tag.findOne({...object})
-            if(!tag){
+            // FIND BASED ON BODY 
+            tag = await Tag.find({...object}, null, options)
+            if(tag.length === 0){
                 return res.status(404).send({message:'Tag not Found'})
             }
             // debugging
             // console.log('tag =')
             // console.log(tag)
 
-            const deployment = await Deployment.findById(tag.author)
-            // debugging 
-            // console.log('deployment =')
-            // console.log(deployment)
-
+            // FILTER BY STATE 
             if(req.query.state){
-                if(req.query.state !== deployment.state.toString()){
-                    return res.status(404).send({message:`Deployment State ${deployment.stateDescription}`})
+                // FIND DEPLOYMENT
+                if(!Array.isArray(tag)){
+                    tag = [tag]
+                }
+                for (let x = 0; x < tag.length; x++){
+                    deployment = await Deployment.findById(tag[x].author)
+                    // NO MATCH THROW
+                    // debugging
+                    // console.log({message:`Deployment State ${deployment.stateDescription}`})
+                    if(req.query.state === deployment.state.toString()){
+                        array.push(tag[x])
+                    }
                 }
             }
+            else {
+                array = tag
+            }
         }
-        res.status(200).send(tag)
+        if(array.length === 0){
+            return res.status(404).send({message:'Tag, State not Found'})
+        }
+        // TODO, IDX IF NECESSARY 
+        array = array.length === 1 ? array[0] : array
+        res.status(200).send(array)
     } catch (e) {
         console.error(e)
         res.status(500).send(e)
-    }
-})
-
-// DEPLOYMENT
-// WITH QUERY STRING CAN SET STATUS
-router.get('/app/deployment:id', auth, async (req, res) => {
-    try {
-        const deployment = await Deployment.findById(req.params.id)
-        if (!deployment){ 
-            return res.status(404).send({message:'Deployment not found'})
-        }
-        if (req.query.state){
-            deployment.state = req.query.state
-            await deployment.save()
-        }
-        return res.status(200).send(deployment)
-    } catch (e) {
-        // logger.log('error', `${(e.message)}`)
-        res.status(500).send(e.message)
     }
 })
 
@@ -469,23 +544,31 @@ router.get('/app/deployment:id', auth, async (req, res) => {
 // router.post('/app/seed', auth, async (req, res) => {
 // })
 
-// // TODO JUST EVAL/TESTING IF NECESSARY AS HANDLED IN MAIN CONNECTOR MODEL
+/*
+OTHER ENDPOINTS 
+*/
+
+// // TODO IF NECESSARY 
+// // AS COMPLEXITY REQUIRED 
+// // HANDLED IN MAIN CONNECTOR MODEL
 // // FETCH
-// router.get('/app/fetch/:id', async (req, res) => {
-//     try {
-//         const connector = await Connector.findById(req.params.id)
-//         if(!connector){
-//             return res.status(404).send({message:'Connector not found'})
-//         }
-//         if(connector.provider === 'AWS'){
-//             await discover(process.env.AWS_ACCESS_KEY, process.env.AWS_SECRET_KEY, connector)
-//         }
-//         res.status(200).send()
-//     } catch (e) {
-//         // logger.log('error', `${(e.message)}`)
-//         res.status(500).send(e)
-//     }
-// })
+router.get('/app/fetch:id', async (req, res) => {
+    try {
+        const connector = await Connector.findById(req.params.id)
+        if(!connector){
+            return res.status(404).send({message:'Connector not found'})
+        }
+        // NOTE THAT THE PROVIDER OF THE CONNECTOR WILL NEED TO BE A SPECIFIC CASE
+        // UNNECESSARY HARD CODING
+        if(connector.provider === 'aws'){
+            await fetch(process.env.AWS_ACCESS_KEY, process.env.AWS_SECRET_KEY,  process.env.AWS_REGION, connector)
+        }
+        res.status(200).send()
+    } catch (e) {
+        // logger.log('error', `${(e.message)}`)
+        res.status(500).send(e)
+    }
+})
 
 // USED BY SERVICE TO UPDATE LOGICAL ID'S 
 // router.patch('/resource/updateSetting/:id', auth, async (req, res) => {
@@ -591,28 +674,7 @@ router.get('/app/deployment:id', auth, async (req, res) => {
 //     }
 // })
 
-// router.delete('/resource/delete/:id', auth, async (req, res) => {
-//     try {
-//         const resource = await Resource.deleteOne({
-//             _id: req.params.id
-//         })
-//         // const deployment = await Deployment.find({
-//         //     author: resource.owner
-//         // })
-//         if(!resource){
-//             return res.status(404).send({message:'Resource not Found'})
-//         }
-//         // if(!deployment){
-//         //     return res.status(404).send({message:'Deployment not Found'})
-//         // }
-//         // if(deployment.state !== 0 || deployment.state !== 8 || deployment.state !== 13){
-//         //     return res.status(404).send({message:'Deployment active'})
-//         // }
-//         res.status(200).send()
-//     } catch (e) {
-//         res.status(500).send({error: e.message})
-//     }
-// })
+
 
 
 module.exports = router

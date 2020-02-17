@@ -1,16 +1,16 @@
 const AWS = require('aws-sdk')
 const uuid = require('uuid')
 const { logger } = require('../../src/util/log')
-const MainConnector = require('../../model/context/connector')
-var connectorId = null
+const Connector = require('../../model/context/connector')
+var connect = null
 
-var discover = async (key, secret, connector) => {
+var fetch = async (key, secret, region, connector) => {
     connect = connector
     const cred = await loadCred(key, secret)
     // debugging
     // console.log('cred =')
     // console.log(cred)
-    await getEC2VPC(cred, connector.location, connector.VPCKeywordRegex)
+    await getEC2VPC(cred, region, '')
 }
 
 var loadCred = async function(key, secret, session = null) {
@@ -114,7 +114,7 @@ var listVPC = async function (arr = [], regex) {
         // console.log(result)
         // console.log('connect =')
         // console.log(connect)
-        await MainConnector.seedVPC(result, connect)
+        await Connector.seedVPC(result, connect)
     } catch (e) {
         throw new Error(e)
     }
@@ -164,6 +164,6 @@ var verifyPattern = async (string = '', objArray = []) => {
 }
 
 module.exports = {
-    discover
+    fetch
 }
 

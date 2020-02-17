@@ -1,6 +1,10 @@
 const mongoose = require('mongoose')
 const Abbr = require('../svc/abbr')
 
+// TODO, EVAL SEED VPC
+const Resource = require('../app/resource')
+const Config = require('../app/config')
+
 const connectorSchema = new mongoose.Schema({
     provider:{
         type: String,
@@ -53,51 +57,57 @@ connectorSchema.methods.toJSON = function(){
     return connector
 }
 
-// connectorSchema.statics.seedVPC = async function (list = [], connect=null){
-//     try {
-//         if (connect !== null && list.length > 0){
-//             await list.forEach(element => {
-//                 var addVPC = async (element) => {
-//                     var vpc = null
-//                     // TODO VERIFY IF INSTEAD OF FIND, USE findOneAndDelete
-//                     const find = await Resource.findOneAndDelete({
-//                         logicalName: element.name
-//                     }, null)
-//                     // debugging
-//                     // console.log('element =')
-//                     // console.log(element)
-//                     // console.log('find =')
-//                     // console.log(find)
-//                     if(!find){
-//                         vpc = await new Resource({
-//                             author: connect._id, 
-//                             owner: connect._id, 
-//                             resourceType: 'VPC',
-//                             logicalName: element.name, 
-//                             logicalId: element.id
-//                         })
-//                         const setting = await new ResourceSetting({
-//                             author: vpc.id,
-//                             owner: connect._id, 
-//                             cidr: element.cidr
-//                         })
-//                         await vpc.save()
-//                         await setting.save()
-//                         // debugging
-//                         // console.log('vpc =')
-//                         // console.log(vpc)
-//                         // console.log('setting =')
-//                         // console.log(setting)
-//                     }
-//                     return vpc
-//                 }
-//                 addVPC(element)
-//             })
-//         }
-//     } catch (e) {
-//         throw new Error(e)
-//     }
-// }
+// TODO, EVALUATE IF NECESSARY 
+connectorSchema.statics.seedVPC = async function (list = [], connect=null){
+    try {
+        // debugging 
+        // console.log('seedVPC, connect =')
+        // console.log(connect)
+        
+        if (connect !== null && list.length > 0){
+            await list.forEach(element => {
+                var addVPC = async (element) => {
+                    var vpc = null
+                    // TODO VERIFY findOneAndDelete is suitable 
+                    const find = await Resource.findOneAndDelete({
+                        logicalName: element.name
+                    }, null)
+                    // debugging
+                    // console.log('element =')
+                    // console.log(element)
+                    // console.log('find =')
+                    // console.log(find)
+                    if(!find){
+                        vpc = await new Resource({
+                            author: connect._id, 
+                            owner: connect._id, 
+                            resourceType: 'vpc',
+                            logicalName: element.name, 
+                            logicalId: element.id
+                        })
+                        const config = await new Config({
+                            owner: vpc.id,
+                            author: connect._id, 
+                            resourceType: 'vpc',
+                            cidr: element.cidr
+                        })
+                        await vpc.save()
+                        await config.save()
+                        // debugging
+                        // console.log('vpc =')
+                        // console.log(vpc)
+                        // console.log('config =')
+                        // console.log(config)
+                    }
+                    return vpc
+                }
+                addVPC(element)
+            })
+        }
+    } catch (e) {
+        throw new Error(e)
+    }
+}
 
 connectorSchema.pre('save', async function (next) {
     try {
