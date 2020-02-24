@@ -424,12 +424,21 @@ router.get('/app/deployment', auth, async (req, res) => {
 // REMOVE 
 router.delete('/app/remove:id', auth, async (req, res) => {
     try {
-        
-        const deployment = await Deployment.findByIdAndRemove({
-            _id: req.params.id
-        })
-        if(!deployment){
-            return res.status(404).send({message:'Deployment not Found'})
+        // RESOURCE OTHERWISE DEFAULT TO DEPLOYMENT
+        if(req.query.document === 'resource'){
+            const resource = await Resource.findByIdAndRemove({
+                _id: req.params.id
+            })
+            if(!resource){
+                return res.status(404).send({message:'Resource not Found'})
+            }
+        } else {
+            const deployment = await Deployment.findByIdAndRemove({
+                _id: req.params.id
+            })
+            if(!deployment){
+                return res.status(404).send({message:'Deployment not Found'})
+            }
         }
         res.status(200).send()
     } catch (e) {
@@ -529,7 +538,7 @@ router.get('/app/tag/discovery', auth, async (req, res) => {
             }
         }
         if(array.length === 0){
-            return res.status(404).send({message:'Tag, State not Found'})
+            return res.status(404).send({message:'Tag, State Mismatch'})
         }
         // TODO, IDX IF NECESSARY 
         array = array.length === 1 ? array[0] : array
@@ -545,7 +554,8 @@ router.get('/app/tag/discovery', auth, async (req, res) => {
 // })
 
 /*
-OTHER ENDPOINTS 
+OTHER ENDPOINTS
+~ EXPERIMENTAL 
 */
 
 // // TODO IF NECESSARY 

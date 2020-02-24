@@ -1,7 +1,8 @@
 const { httpFetch } = require('./fetch')
 
 
-// if srv006383.mud.internal.co.za getaddrinfo ENOTFOUND use IP 
+// if Hostname getaddrinfo ENOTFOUND use IP
+// STEP 1
 var login = async function(vCenter, user, password){
     try {
         const session = await httpFetch(443, vCenter, '/rest/com/vmware/cis/session', true, '', 'POST', user, password)    
@@ -15,6 +16,7 @@ var login = async function(vCenter, user, password){
     }
 }
 
+// GET PATH FOR A FULL RETURN 
 var getPath = async function (vCenter, path, query, user, password, cookie){
     try {
         const list = await httpFetch(443, vCenter, `/rest/vcenter/${path}`, true, query, 'GET', user, password, cookie)
@@ -24,6 +26,8 @@ var getPath = async function (vCenter, path, query, user, password, cookie){
     }
 }
 
+// GET PATH REGEX WILL INCLUDE A MATCH 
+// NEED FULL PATH UNLIKE ABOVE 
 var getPathRegEx = async function (vCenter, path, query, regex, user, password, cookie){
     try {
         const upper = regex.toUpperCase()
@@ -50,6 +54,7 @@ var getPathRegEx = async function (vCenter, path, query, regex, user, password, 
     }
 }
 
+// CLUSTER SPECIFIC REQUEST WITH REGEX 
 var clusterRegEx = async function (vCenter, query, regex, user, password, cookie){
     try {
         const upper = regex.toUpperCase()
@@ -74,12 +79,14 @@ var clusterRegEx = async function (vCenter, query, regex, user, password, cookie
     }
 }
 
-var datastore = async function (vCenter, user, password, cookie){
+// CLUSTER SPECIFIC REQUEST WITH CAPACITY CHECK OF GREATER THEN 10 %, 
+// REGEX EXAMPLE (esx\d{0,3}|local|\-stage|-temp)
+var dataStore = async function (vCenter, user, password, cookie, regex='null'){
     try {
         const list = await httpFetch(443, vCenter, '/rest/vcenter/datastore', true, '?filter.types.1=VMFS', 'GET', user, password, cookie)
         array = []
         list.body.value.forEach(ds => {
-            if(!ds.name.toLowerCase().match(/(esx\d{0,3}|local|\-drt\d{0,3}|\-stage)|datastore|-gbt$|-temp$|-scratch$/) && (ds.free_space/ds.capacity) > .10){
+            if(!ds.name.toLowerCase().match(regex) && (ds.free_space/ds.capacity) > .10){
                 const object = {
                     name: ds.name,
                     id: ds.datastore,
@@ -98,6 +105,7 @@ var datastore = async function (vCenter, user, password, cookie){
     }
 }
 
+// LASTLY, LOGOFF 
 var logoff = async function(vCenter, user, password, cookie){
     try {
         const session = await httpFetch(443, vCenter, '/rest/com/vmware/cis/session', true, '', 'DELETE', user, password, cookie)
@@ -114,7 +122,7 @@ module.exports = {
     getPath,
     getPathRegEx,
     clusterRegEx,
-    datastore,
+    dataStore,
     logoff
 }
 

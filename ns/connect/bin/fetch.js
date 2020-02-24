@@ -1,5 +1,4 @@
 const got = require('got')
-const { logger } = require('../../src/util/log')
 
 // httpFetch Func
 var httpFetch = async function (port, host, path, json = true, queryStr = '', method = 'GET', user = null, pwd = null, cookie = null, jwt = null){
@@ -34,9 +33,9 @@ var httpFetch = async function (port, host, path, json = true, queryStr = '', me
         }
     }
     // debugging
-    // logger.log('info', `fetch url ${url}`)
-    // logger.log('info', `fetch header =`)
-    // logger.log('info', headers)
+    // console.log('info', `fetch url ${url}`)
+    // console.log('info', `fetch header =`)
+    // console.log('info', headers)
 
     const client = got.extend({
         json, 
@@ -55,12 +54,12 @@ var httpFetch = async function (port, host, path, json = true, queryStr = '', me
     try {
         var http = await client(url)
         if(!method === 'DELETE' && !http.body){
-            throw new Error('No Body')
+            throw ('No Body')
         }
         return http
     } catch (e) {
-        // console.error(e)
-        throw new Error(e)
+        console.error(e)
+        throw (e)
     }
 }
 

@@ -22,6 +22,6 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "maurizio.lupini@bcx.co.za",
-  "license": "ISC"
+  "author": "molupini.dev@gmail.com",
+  "license": "MIT"
 }

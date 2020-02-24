@@ -352,4 +352,17 @@ router.get('/svc/name', async (req, res) => {
     }
 })
 
+router.delete('/svc/name:id', async (req, res) => {
+    try{
+        const name = await Name.findByIdAndDelete(req.params.id)
+        if (!name) {
+            return res.status(400).send({message:'Name not Found'})
+        }
+        res.status(200).send()
+    } catch (e) {
+        // logger.log('error', `${(e.message)}`)
+        res.status(500).send({error: e.message})
+    }
+})
+
 module.exports = router
